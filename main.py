@@ -89,14 +89,15 @@ def login(usuario: str, password: str):
     return {"ok": False}
 
 # 👇 APP
-@app.get("/app")
+@app.get("/app", response_class=HTMLResponse)
 def app_web():
-    return FileResponse("templates/index.html")
+    with open(os.path.join(BASE_DIR, "templates", "index.html"), encoding="utf-8") as f:
+        return HTMLResponse(content=f.read())
 
 @app.get("/fichar")
 def fichar(request: Request, empleado_id: str, pin: str, tipo: str = "presencial"):
 
-    # 🔐 Validación PINm
+    # 🔐 Validación PIN
     if PINS.get(empleado_id) != pin:
         raise HTTPException(status_code=403, detail="PIN incorrecto")
 
