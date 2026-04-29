@@ -96,7 +96,7 @@ def app_web():
 @app.get("/fichar")
 def fichar(request: Request, empleado_id: str, pin: str, tipo: str = "presencial"):
 
-    # 🔐 Validación PIN
+    # 🔐 Validación PINm
     if PINS.get(empleado_id) != pin:
         raise HTTPException(status_code=403, detail="PIN incorrecto")
 
