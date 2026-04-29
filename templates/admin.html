@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Panel Admin</title>
+
+<style>
+body {
+    font-family: Arial;
+    background: #f4f4f4;
+    padding: 20px;
+}
+
+h1 {
+    text-align: center;
+}
+
+/* filtros */
+.filtros {
+    margin-bottom: 20px;
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+input, select {
+    padding: 8px;
+}
+
+button {
+    padding: 8px 12px;
+    cursor: pointer;
+}
+
+/* tabla */
+table {
+    width: 100%;
+    border-collapse: collapse;
+    background: white;
+}
+
+th, td {
+    padding: 10px;
+    border: 1px solid #ddd;
+    text-align: center;
+}
+
+th {
+    background: #333;
+    color: white;
+}
+
+tr:nth-child(even) {
+    background: #f9f9f9;
+}
+
+/* colores por empresa */
+.ICADEPRO { background: #cfe2ff !important; }      /* Azul */
+.PROYECTOS { background: #d1e7dd !important; }     /* Verde */
+.PROICAFOR { background: #e2d9f3 !important; }     /* Morado */
+.GRUPO { background: #ffe5b4 !important; }         /* Naranja */
+
+/* PDF */
+@media print {
+    .filtros, button, input, select {
+        display: none !important;
+    }
+
+    th {
+        background: #000 !important;
+        color: white !important;
+    }
+}
+</style>
+
+</head>
+
+<body>
+
+<h1>Panel de Fichajes</h1>
+
+<div class="filtros">
+
+    <input type="date" id="filtroFecha">
+
+    <select id="filtroEmpleado">
+        <option value="">Todos los empleados</option>
+    </select>
+
+    <select id="filtroEmpresa">
+        <option value="">Todas las empresas</option>
+        <option value="ICADEPRO">ICADEPRO</option>
+        <option value="Proyectos Empresariales Canarios">Proyectos Empresariales Canarios</option>
+        <option value="PROICAFOR">PROICAFOR</option>
+        <option value="GRUPO ICADEPRO">GRUPO ICADEPRO</option>
+    </select>
+
+    <button onclick="filtrar()">Filtrar</button>
+
+    <a href="/exportar_excel">
+        <button>Descargar Excel</button>
+    </a>
+
+    <button onclick="window.print()">Descargar PDF</button>
+
+</div>
+
+<table>
+    <thead>
+        <tr>
+            <th>Empleado</th>
+            <th>Empresa</th>
+            <th>Fecha</th>
+            <th>Entrada</th>
+            <th>Salida</th>
+            <th>Horas</th>
+            <th>Tipo</th>
+        </tr>
+    </thead>
+    <tbody id="tabla"></tbody>
+</table>
+
+<script>
+
+const nombres = {
+    "pilar_ganuza": "Pilar Ganuza",
+    "begona_bonis": "Begoña de Bonis",
+    "maria_eugenia_lopez": "Mª Eugenia López Baez",
+    "luichy_jorge": "María Luisa Jorge Cabrera",
+    "jose_sanchez": "José Sánchez",
+    "javier_alfonso": "Javier Alfonso",
+    "eduardo_rivero": "Eduardo Rivero",
+    "nazaret_ramos": "Nazaret Ramos",
+    "asuncion_olivares": "Asunción Olivares",
+    "carla_martin": "Carla Martín",
+    "cristo_diaz": "Cristo Díaz Miranda",
+    "laura_perez": "Laura Pérez Gómez",
+    "marta_cano": "Marta Cano Oliva",
+    "soledad_fernandez": "Soledad Fernández",
+    "candelaria_rodriguez": "Candelaria Rodríguez",
+    "natalia_diaz": "Natalia Díaz"
+};
+
+let datosGlobales = [];
+
+function cargarDatos() {
+    fetch("/ver_fichajes")
+    .then(res => res.json())
+    .then(data => {
+        datosGlobales = data.fichajes;
+        cargarSelect();
+        pintarTabla(datosGlobales);
+    });
+}
+
+function cargarSelect() {
+    let select = document.getElementById("filtroEmpleado");
+
+    select.innerHTML = '<option value="">Todos los empleados</option>';
+
+    Object.entries(nombres).forEach(([id, nombre]) => {
+        let option = `<option value="${id}">${nombre}</option>`;
+        select.innerHTML += option;
+    });
+}
+
+function calcularHoras(entrada, salida) {
+    if (!entrada || !salida) return "-";
+
+    let e = entrada.split(":");
+    let s = salida.split(":");
+
+    let inicio = new Date(0,0,0,e[0],e[1],e[2]);
+    let fin = new Date(0,0,0,s[0],s[1],s[2]);
+
+    let diff = (fin - inicio) / 1000;
+
+    let horas = Math.floor(diff / 3600);
+    let minutos = Math.floor((diff % 3600) / 60);
+
+    return `${horas}h ${minutos}m`;
+}
+
+function obtenerClaseEmpresa(empresa) {
+    if (empresa === "ICADEPRO") return "ICADEPRO";
+    if (empresa === "Proyectos Empresariales Canarios") return "PROYECTOS";
+    if (empresa === "PROICAFOR") return "PROICAFOR";
+    if (empresa === "GRUPO ICADEPRO") return "GRUPO";
+    return "";
+}
+
+function pintarTabla(datos) {
+
+    let tabla = document.getElementById("tabla");
+    tabla.innerHTML = "";
+
+    datos.forEach(f => {
+
+        let nombre = nombres[f.empleado] || f.nombre;
+        let horas = calcularHoras(f.entrada, f.salida);
+        let clase = obtenerClaseEmpresa(f.empresa);
+
+        // 🔥 NUEVO → tipo visual
+        let tipoVisual = f.tipo === "remoto"
+            ? '<span style="color:red;font-weight:bold;">REMOTO</span>'
+            : '<span style="color:green;font-weight:bold;">PRESENCIAL</span>';
+
+        let fila = `
+            <tr class="${clase}">
+                <td>${nombre}</td>
+                <td>${f.empresa || "-"}</td>
+                <td>${f.fecha}</td>
+                <td>${f.entrada || "-"}</td>
+                <td>${f.salida || "-"}</td>
+                <td>${horas}</td>
+                <td>${tipoVisual}</td>
+            </tr>
+        `;
+
+        tabla.innerHTML += fila;
+    });
+}
+function filtrar() {
+
+    let fecha = document.getElementById("filtroFecha").value;
+    let empleado = document.getElementById("filtroEmpleado").value;
+    let empresa = document.getElementById("filtroEmpresa").value;
+
+    let filtrados = datosGlobales.filter(f => {
+
+        let okFecha = !fecha || f.fecha === fecha;
+        let okEmpleado = !empleado || f.empleado === empleado;
+        let okEmpresa = !empresa || f.empresa === empresa;
+
+        return okFecha && okEmpleado && okEmpresa;
+    });
+
+    pintarTabla(filtrados);
+}
+
+cargarDatos();
+
+</script>
+
+</body>
+</html>
