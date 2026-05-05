@@ -91,19 +91,19 @@ def intentos_recientes(empleado_id, minutos=5):
 # 🔐 PINES (SIN CAMBIOS)
 PINS = {
     "pilar_ganuza": "7942",
-    "begona_bonis": "2222",
-    "maria_eugenia_lopez": "3333",
-    "luichy_jorge": "4444",
-    "jose_sanchez": "1234",
-    "javier_alfonso": "5555",
-    "eduardo_rivero": "6666",
-    "nazaret_ramos": "7777",
-    "asuncion_olivares": "8888",
-    "carla_martin": "9999",
-    "cristo_diaz": "1010",
-    "laura_perez": "2020",
-    "marta_cano": "3030",
-    "soledad_fernandez": "4040",
+    "begona_bonis": "9654",
+    "maria_eugenia_lopez": "8024",
+    "luichy_jorge": "2985",
+    "jose_sanchez": "3639",
+    "javier_alfonso": "4100",
+    "eduardo_rivero": "2096",
+    "nazaret_ramos": "7639",
+    "asuncion_olivares": "8691",
+    "carla_martin": "1336",
+    "cristo_diaz": "7245",
+    "laura_perez": "2741",
+    "marta_cano": "1124",
+    "soledad_fernandez": "5315",
     "candelaria_rodriguez": "5050",
     "natalia_diaz": "6060"
 }
@@ -168,7 +168,7 @@ def fichar(request: Request, empleado_id: str, pin: str, tipo: str = "presencial
 
     if tipo_acceso == "oficina" and not ip_valida(ip):
         guardar_alerta(empleado_id, "FUERA_DE_SEDE", "Fichaje fuera de red", ip)
-        tipo = "remoto"
+        print(f"⚠️ FICHAJE FUERA DE SEDE: {empleado_id} desde IP {ip}")
         mensaje_extra = "⚠️ Has fichado fuera de una sede autorizada"
     else:
         mensaje_extra = ""
