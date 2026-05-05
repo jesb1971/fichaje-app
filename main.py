@@ -170,7 +170,7 @@ def fichar(request: Request, empleado_id: str, pin: str, tipo: str = "presencial
         guardar_alerta(empleado_id, "FUERA_DE_SEDE", "Fichaje fuera de red", ip)
         tipo = "remoto"
     else:
-    mensaje_extra = ""
+        = ""
 
     # 🏢 DATOS EMPRESA
     datos_emp = EMPLEADOS.get(empleado_id, {})
