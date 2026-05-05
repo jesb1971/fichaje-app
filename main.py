@@ -121,24 +121,26 @@ def fichar(request: Request, empleado_id: str, pin: str, tipo: str = "presencial
     # 🔐 CONTROL DE INTENTOS DE PIN
     if empleado_id not in INTENTOS_FALLIDOS:
         INTENTOS_FALLIDOS[empleado_id] = 0
-    
+
     if PINS.get(empleado_id) != pin:
         INTENTOS_FALLIDOS[empleado_id] += 1
+
         ip = request.client.host
-        guardar_alerta(empleado_id, "PIN_INCORRECTO", "Intento de acceso con PIN incorrecto", ip)        
+        guardar_alerta(empleado_id, "PIN_INCORRECTO", "Intento de acceso con PIN incorrecto", ip)
+
         if INTENTOS_FALLIDOS[empleado_id] >= MAX_INTENTOS:
-              raise HTTPException(
-                 status_code=403,
-                  detail="Demasiados intentos fallidos. Intenta más tarde."
-              )
+            raise HTTPException(
+                status_code=403,
+                detail="Demasiados intentos fallidos. Intenta más tarde."
+            )
+
         raise HTTPException(
-           status_code=403,
-           detail=f"PIN incorrecto ({INTENTOS_FALLIDOS[empleado_id]}/{MAX_INTENTOS})"
+            status_code=403,
+            detail=f"PIN incorrecto ({INTENTOS_FALLIDOS[empleado_id]}/{MAX_INTENTOS})"
         )
 
-# ✅ SOLO SI EL PIN ES CORRECTO
-INTENTOS_FALLIDOS[empleado_id] = 0
-
+    # ✅ PIN CORRECTO → RESET
+    INTENTOS_FALLIDOS[empleado_id] = 0
 
     # 🔒 CONTROL DE ACCESO POR IP
     ip = request.client.host
@@ -146,8 +148,8 @@ INTENTOS_FALLIDOS[empleado_id] = 0
 
     IPS_PERMITIDAS = [
         "127.0.0.1",
-        "192.168.0.",  # Álvarez de Lugo
-        "192.168.1.",  # Duggi + Ingenieros
+        "192.168.0.",
+        "192.168.1.",
     ]
 
     def ip_valida(ip):
@@ -155,7 +157,7 @@ INTENTOS_FALLIDOS[empleado_id] = 0
 
     # 🔒 CONTROL INTELIGENTE
     if tipo_acceso == "oficina" and not ip_valida(ip):
-        guardar_alerta(empleado_id, "FUERA_DE_SEDE", "Fichaje realizado fuera de la red autorizada", ip)
+        guardar_alerta(empleado_id, "FUERA_DE_SEDE", "Fichaje fuera de red autorizada", ip)
         print(f"⚠️ FICHAJE FUERA DE SEDE: {empleado_id} desde IP {ip}")
         tipo = "remoto"
 
@@ -193,15 +195,14 @@ INTENTOS_FALLIDOS[empleado_id] = 0
         mensaje = "Salida registrada"
 
     else:
-        guardar_alerta(empleado_id, "DOBLE_FICHAJE", "Intento de fichar más de 2 veces en el día", ip)
-        print(f"⚠️ DOBLE FICHAJE: {empleado_id} intentó fichar más de 2 veces")
+        guardar_alerta(empleado_id, "DOBLE_FICHAJE", "Intento de fichar más de 2 veces", ip)
+        print(f"⚠️ DOBLE FICHAJE: {empleado_id}")
         mensaje = "Ya has fichado entrada y salida hoy"
 
     conn.commit()
     conn.close()
 
     return {"mensaje": mensaje, "hora": hora}
-
 @app.get("/estado")
 def estado(empleado_id: str):
     conn = database.conectar()
