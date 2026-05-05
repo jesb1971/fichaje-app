@@ -169,6 +169,8 @@ def fichar(request: Request, empleado_id: str, pin: str, tipo: str = "presencial
     if tipo_acceso == "oficina" and not ip_valida(ip):
         guardar_alerta(empleado_id, "FUERA_DE_SEDE", "Fichaje fuera de red", ip)
         tipo = "remoto"
+    else:
+    mensaje_extra = ""
 
     # 🏢 DATOS EMPRESA
     datos_emp = EMPLEADOS.get(empleado_id, {})
@@ -210,7 +212,11 @@ def fichar(request: Request, empleado_id: str, pin: str, tipo: str = "presencial
     conn.commit()
     conn.close()
 
-    return {"mensaje": mensaje, "hora": hora}
+    return {
+        "mensaje": mensaje,
+        "hora": hora,
+        "aviso": mensaje_extra
+    }
 
 @app.get("/estado")
 def estado(empleado_id: str):
