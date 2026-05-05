@@ -138,42 +138,21 @@ def app_web():
 def fichar(request: Request, empleado_id: str, pin: str, tipo: str = "presencial"):
 
     ip = request.client.host
-    ahora = datetime.now()
 
-    # 🔒 INICIALIZAR CONTROL
-    if empleado_id not in INTENTOS_FALLIDOS:
-        INTENTOS_FALLIDOS[empleado_id] = []
+    # 🔐 VALIDAR PIN
+    if PINS.get(empleado_id) != pin:
 
-    # 🔒 LIMPIAR INTENTOS ANTIGUOS (últimos 5 minutos)
-    INTENTOS_FALLIDOS[empleado_id] = [
-        t for t in INTENTOS_FALLIDOS[empleado_id]
-        if (ahora - t).seconds < 300
-    ]
-
-    # 🔒 BLOQUEO REAL
-    if len(INTENTOS_FALLIDOS[empleado_id]) >= 3:
-        raise HTTPException(
-            status_code=403,
-            detail="Demasiados intentos. Espera 5 minutos."
+        guardar_alerta(
+            empleado_id,
+            "PIN_INCORRECTO",
+            "Intento de acceso con PIN incorrecto",
+            ip
         )
 
-   # 🔐 VALIDAR PIN (VERSIÓN SEGURA)
-   if PINS.get(empleado_id) != pin:
-
-      guardar_alerta(
-        empleado_id,
-        "PIN_INCORRECTO",
-        "Intento de acceso con PIN incorrecto",
-        ip
-   )
-
-      raise HTTPException(
-         status_code=403,
-         detail="PIN incorrecto"
-      )
-
-    # ✅ PIN CORRECTO → RESET
-    INTENTOS_FALLIDOS[empleado_id] = []
+        raise HTTPException(
+            status_code=403,
+            detail="PIN incorrecto"
+        )
 
     # 🔒 CONTROL DE ACCESO POR IP
     tipo_acceso = EMPLEADOS.get(empleado_id, {}).get("tipo_acceso", "oficina")
@@ -198,6 +177,7 @@ def fichar(request: Request, empleado_id: str, pin: str, tipo: str = "presencial
     conn = database.conectar()
     cursor = conn.cursor()
 
+    ahora = datetime.now()
     fecha = ahora.strftime("%Y-%m-%d")
     hora = ahora.strftime("%H:%M:%S")
 
