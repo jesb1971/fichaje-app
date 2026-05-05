@@ -104,8 +104,8 @@ PINS = {
     "laura_perez": "2741",
     "marta_cano": "1124",
     "soledad_fernandez": "5315",
-    "candelaria_rodriguez": "5050",
-    "natalia_diaz": "6060"
+    "candelaria_rodriguez": "6041",
+    "natalia_diaz": "1797"
 }
 
 @app.get("/")
@@ -157,7 +157,7 @@ def fichar(request: Request, empleado_id: str, pin: str, tipo: str = "presencial
     # 🔒 CONTROL DE ACCESO POR IP
     tipo_acceso = EMPLEADOS.get(empleado_id, {}).get("tipo_acceso", "oficina")
 
-    IPS_PERMITIDAS = [
+I   PS_PERMITIDAS = [
         "127.0.0.1",
         "192.168.0.",
         "192.168.1.",
@@ -166,10 +166,10 @@ def fichar(request: Request, empleado_id: str, pin: str, tipo: str = "presencial
     def ip_valida(ip):
         return any(ip.startswith(prefijo) for prefijo in IPS_PERMITIDAS)
 
+    # 🔒 CONTROL ORIGINAL + MENSAJE (SIN TOCAR LÓGICA)
     if tipo_acceso == "oficina" and not ip_valida(ip):
         guardar_alerta(empleado_id, "FUERA_DE_SEDE", "Fichaje fuera de red", ip)
-        print(f"⚠️ FICHAJE FUERA DE SEDE: {empleado_id} desde IP {ip}")
-        mensaje_extra = "⚠️ Has fichado fuera de una sede autorizada"
+        ensaje_extra = "⚠️ Has fichado fuera de una sede autorizada"
     else:
         mensaje_extra = ""
 
