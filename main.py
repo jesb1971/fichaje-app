@@ -9,8 +9,12 @@ import qrcode
 
 app = FastAPI()
 
+from datetime import datetime, timedelta  # 👈 IMPORTANTE
+
 INTENTOS_FALLIDOS = {}
+BLOQUEOS = {}          # 👈 NUEVO
 MAX_INTENTOS = 3
+TIEMPO_BLOQUEO = 5     # 👈 NUEVO (minutos)
 
 # 🔥 STATIC
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -118,30 +122,36 @@ def app_web():
 @app.get("/fichar")
 def fichar(request: Request, empleado_id: str, pin: str, tipo: str = "presencial"):
 
-    # 🔒 CONTROL DE BLOQUEO
+    ip = request.client.host
+
+    # 🔒 CONTROL DE BLOQUEO REAL
     if empleado_id in BLOQUEOS:
         if datetime.now() < BLOQUEOS[empleado_id]:
+            print(f"⛔ BLOQUEADO: {empleado_id}")
             raise HTTPException(
                 status_code=403,
                 detail="Usuario bloqueado temporalmente. Intenta más tarde."
             )
         else:
-            # desbloqueo automático
+            print(f"✅ DESBLOQUEADO: {empleado_id}")
             del BLOQUEOS[empleado_id]
             INTENTOS_FALLIDOS[empleado_id] = 0
 
-    # 🔐 CONTROL DE INTENTOS DE PIN
+    # 🔐 CONTROL DE INTENTOS
     if empleado_id not in INTENTOS_FALLIDOS:
         INTENTOS_FALLIDOS[empleado_id] = 0
 
     if PINS.get(empleado_id) != pin:
         INTENTOS_FALLIDOS[empleado_id] += 1
 
-        ip = request.client.host
         guardar_alerta(empleado_id, "PIN_INCORRECTO", "Intento de acceso con PIN incorrecto", ip)
+
+        print(f"❌ Intento {INTENTOS_FALLIDOS[empleado_id]} de {empleado_id}")
 
         if INTENTOS_FALLIDOS[empleado_id] >= MAX_INTENTOS:
             BLOQUEOS[empleado_id] = datetime.now() + timedelta(minutes=TIEMPO_BLOQUEO)
+
+            print(f"🚨 BLOQUEANDO A {empleado_id}")
 
             raise HTTPException(
                 status_code=403,
@@ -154,6 +164,7 @@ def fichar(request: Request, empleado_id: str, pin: str, tipo: str = "presencial
         )
 
     # ✅ PIN CORRECTO → RESET
+    print(f"✅ PIN correcto {empleado_id}")
     INTENTOS_FALLIDOS[empleado_id] = 0
 
     # 🔒 CONTROL DE ACCESO POR IP
