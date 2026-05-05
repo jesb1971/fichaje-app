@@ -136,7 +136,7 @@ def fichar(request: Request, empleado_id: str, pin: str, tipo: str = "presencial
            detail=f"PIN incorrecto ({INTENTOS_FALLIDOS[empleado_id]}/{MAX_INTENTOS})"
         )
 
-# ✅ AQUÍ VA
+# ✅ SOLO SI EL PIN ES CORRECTO
 INTENTOS_FALLIDOS[empleado_id] = 0
 
 
