@@ -9,6 +9,9 @@ import qrcode
 
 app = FastAPI()
 
+INTENTOS_FALLIDOS = {}
+MAX_INTENTOS = 3
+
 # 🔥 STATIC
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 app.mount("/static", StaticFiles(directory=os.path.join(BASE_DIR, "static")), name="static")
@@ -115,12 +118,25 @@ def app_web():
 @app.get("/fichar")
 def fichar(request: Request, empleado_id: str, pin: str, tipo: str = "presencial"):
 
-    # 🔐 Validación PIN
+    # 🔐 CONTROL DE INTENTOS DE PIN
+    if empleado_id not in INTENTOS_FALLIDOS:
+        INTENTOS_FALLIDOS[empleado_id] = 0
+    
     if PINS.get(empleado_id) != pin:
+        INTENTOS_FALLIDOS[empleado_id] += 1
+
         ip = request.client.host
         guardar_alerta(empleado_id, "PIN_INCORRECTO", "Intento de acceso con PIN incorrecto", ip)
-        print(f"🚨 INTENTO FALLIDO: {empleado_id} desde IP {ip}")
-        raise HTTPException(status_code=403, detail="PIN incorrecto")
+        
+        if INTENTOS_FALLIDOS[empleado_id] >= MAX_INTENTOS:
+              raise HTTPException(
+                 status_code=403,
+                  detail="Demasiados intentos fallidos. Intenta más tarde."
+        )
+
+# ✅ AQUÍ VA
+INTENTOS_FALLIDOS[empleado_id] = 0
+
 
     # 🔒 CONTROL DE ACCESO POR IP
     ip = request.client.host
