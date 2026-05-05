@@ -90,7 +90,7 @@ def intentos_recientes(empleado_id, minutos=5):
 
 # 🔐 PINES (SIN CAMBIOS)
 PINS = {
-    "pilar_ganuza": "1111",
+    "pilar_ganuza": "7942",
     "begona_bonis": "2222",
     "maria_eugenia_lopez": "3333",
     "luichy_jorge": "4444",
@@ -167,10 +167,11 @@ def fichar(request: Request, empleado_id: str, pin: str, tipo: str = "presencial
         return any(ip.startswith(prefijo) for prefijo in IPS_PERMITIDAS)
 
     if tipo_acceso == "oficina" and not ip_valida(ip):
-        guardar_alerta(empleado_id, "FUERA_DE_SEDE", "Fichaje fuera de red", ip)
-        tipo = "remoto"
-    else:
-        = ""
+    guardar_alerta(empleado_id, "FUERA_DE_SEDE", "Fichaje fuera de red", ip)
+    tipo = "remoto"
+    mensaje_extra = "⚠️ Has fichado fuera de una sede autorizada"
+else:
+    mensaje_extra = ""
 
     # 🏢 DATOS EMPRESA
     datos_emp = EMPLEADOS.get(empleado_id, {})
