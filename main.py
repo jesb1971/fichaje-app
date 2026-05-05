@@ -213,16 +213,16 @@ def ver_fichajes():
         empresa_final = EMPLEADOS.get(emp_id, {}).get("empresa", "Sin empresa")
 
         resultado.append({
-            "id": fila[0],
-            "empleado": emp_id,
-            "nombre": nombre,
-            "empresa": empresa_final,
-            "fecha": fila[2],
-            "entrada": fila[3],
-            "salida": fila[4],
-            "tipo": fila[5]
-	    "ip": fila[6] if len(fila) > 6 else "-"
-        })
+           "id": fila[0],
+           "empleado": emp_id,
+           "nombre": nombre,
+           "empresa": empresa_final,
+           "fecha": fila[2],
+           "entrada": fila[3],
+           "salida": fila[4],
+           "tipo": fila[5],
+           "ip": fila[6] if len(fila) > 6 else "-"
+})
 
     return {"fichajes": resultado}
 # 🔐 ADMIN
