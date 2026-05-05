@@ -114,12 +114,11 @@ def fichar(request: Request, empleado_id: str, pin: str, tipo: str = "presencial
     def ip_valida(ip):
         return any(ip.startswith(prefijo) for prefijo in IPS_PERMITIDAS)
 
+    # 🔒 CONTROL INTELIGENTE
     if tipo_acceso == "oficina" and not ip_valida(ip):
-        raise HTTPException(
-            status_code=403,
-            detail="Solo puedes fichar desde una sede autorizada"
-        )
-
+        print(f"⚠️ Fichaje externo detectado: {empleado_id} desde IP {ip}")
+        tipo = "remoto"  # Se permite pero queda registrado como remoto
+        
     # 🔍 NUEVO → detectar tipo automáticamente
     if tipo_acceso == "remoto":
         tipo = "remoto"
