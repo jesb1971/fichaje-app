@@ -24,3 +24,22 @@ def crear_tabla():
 
     conn.commit()
     conn.close()
+
+def crear_tabla_alertas():
+    conn = conectar()
+    cursor = conn.cursor()
+
+    cursor.execute("""
+    CREATE TABLE IF NOT EXISTS alertas (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        empleado_id TEXT,
+        tipo_alerta TEXT,
+        descripcion TEXT,
+        ip TEXT,
+        fecha TEXT,
+        hora TEXT
+    )
+    """)
+
+    conn.commit()
+    conn.close()

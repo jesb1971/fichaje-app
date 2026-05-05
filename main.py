@@ -15,6 +15,7 @@ app.mount("/static", StaticFiles(directory=os.path.join(BASE_DIR, "static")), na
 
 # Crear tabla
 database.crear_tabla()
+database.crear_tabla_alertas()
 
 # 🔐 LOGIN CONFIG
 USUARIO = "admin"
@@ -48,6 +49,22 @@ EMPLEADOS = {
     "maria_eugenia_lopez": {"nombre": "Mª Eugenia López Baez", "empresa": "GRUPO ICADEPRO", "tipo_acceso": "oficina"},
     "begona_bonis": {"nombre": "Begoña de Bonis", "empresa": "GRUPO ICADEPRO", "tipo_acceso": "movil"},  # 👈 AUTORIZADA
 }
+
+def guardar_alerta(empleado_id, tipo_alerta, descripcion, ip):
+    conn = database.conectar()
+    cursor = conn.cursor()
+
+    ahora = datetime.now()
+    fecha = ahora.strftime("%Y-%m-%d")
+    hora = ahora.strftime("%H:%M:%S")
+
+    cursor.execute("""
+    INSERT INTO alertas (empleado_id, tipo_alerta, descripcion, ip, fecha, hora)
+    VALUES (?, ?, ?, ?, ?, ?)
+    """, (empleado_id, tipo_alerta, descripcion, ip, fecha, hora))
+
+    conn.commit()
+    conn.close()
 
 # 🔐 PINES (SIN CAMBIOS)
 PINS = {
@@ -99,7 +116,9 @@ def fichar(request: Request, empleado_id: str, pin: str, tipo: str = "presencial
 
     # 🔐 Validación PIN
     if PINS.get(empleado_id) != pin:
-        print(f"🚨 INTENTO FALLIDO: {empleado_id} desde IP {request.client.host}")
+        ip = request.client.host
+        guardar_alerta(empleado_id, "PIN_INCORRECTO", "Intento de acceso con PIN incorrecto", ip)
+        print(f"🚨 INTENTO FALLIDO: {empleado_id} desde IP {ip}")
         raise HTTPException(status_code=403, detail="PIN incorrecto")
 
     # 🔒 CONTROL DE ACCESO POR IP
@@ -117,6 +136,7 @@ def fichar(request: Request, empleado_id: str, pin: str, tipo: str = "presencial
 
     # 🔒 CONTROL INTELIGENTE
     if tipo_acceso == "oficina" and not ip_valida(ip):
+	guardar_alerta(empleado_id, "FUERA_DE_SEDE", "Fichaje realizado fuera de la red autorizada", ip)
         print(f"⚠️ FICHAJE FUERA DE SEDE: {empleado_id} desde IP {ip}")
         tipo = "remoto"  # Se permite pero queda registrado como remoto
         
@@ -160,6 +180,7 @@ def fichar(request: Request, empleado_id: str, pin: str, tipo: str = "presencial
         mensaje = "Salida registrada"
 
     else:
+	guardar_alerta(empleado_id, "DOBLE_FICHAJE", "Intento de fichar más de 2 veces en el día", ip)
         print(f"⚠️ DOBLE FICHAJE: {empleado_id} intentó fichar más de 2 veces")
         mensaje = "Ya has fichado entrada y salida hoy"
 
