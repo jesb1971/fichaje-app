@@ -106,6 +106,7 @@ def login(usuario: str, password: str):
     return {"ok": False}
 
 # 👇 APP
+
 @app.get("/app", response_class=HTMLResponse)
 def app_web():
     with open(os.path.join(BASE_DIR, "templates", "index.html"), encoding="utf-8") as f:
@@ -136,15 +137,9 @@ def fichar(request: Request, empleado_id: str, pin: str, tipo: str = "presencial
 
     # 🔒 CONTROL INTELIGENTE
     if tipo_acceso == "oficina" and not ip_valida(ip):
-	guardar_alerta(empleado_id, "FUERA_DE_SEDE", "Fichaje realizado fuera de la red autorizada", ip)
+        guardar_alerta(empleado_id, "FUERA_DE_SEDE", "Fichaje realizado fuera de la red autorizada", ip)
         print(f"⚠️ FICHAJE FUERA DE SEDE: {empleado_id} desde IP {ip}")
-        tipo = "remoto"  # Se permite pero queda registrado como remoto
-        
-    # 🔍 NUEVO → detectar tipo automáticamente
-    if tipo_acceso == "remoto":
         tipo = "remoto"
-    else:
-        tipo = "presencial"
 
     # 🏢 Datos empresa
     datos_emp = EMPLEADOS.get(empleado_id, {})
@@ -180,7 +175,7 @@ def fichar(request: Request, empleado_id: str, pin: str, tipo: str = "presencial
         mensaje = "Salida registrada"
 
     else:
-	guardar_alerta(empleado_id, "DOBLE_FICHAJE", "Intento de fichar más de 2 veces en el día", ip)
+        guardar_alerta(empleado_id, "DOBLE_FICHAJE", "Intento de fichar más de 2 veces en el día", ip)
         print(f"⚠️ DOBLE FICHAJE: {empleado_id} intentó fichar más de 2 veces")
         mensaje = "Ya has fichado entrada y salida hoy"
 
