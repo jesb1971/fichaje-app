@@ -124,14 +124,16 @@ def fichar(request: Request, empleado_id: str, pin: str, tipo: str = "presencial
     
     if PINS.get(empleado_id) != pin:
         INTENTOS_FALLIDOS[empleado_id] += 1
-
         ip = request.client.host
-        guardar_alerta(empleado_id, "PIN_INCORRECTO", "Intento de acceso con PIN incorrecto", ip)
-        
+        guardar_alerta(empleado_id, "PIN_INCORRECTO", "Intento de acceso con PIN incorrecto", ip)        
         if INTENTOS_FALLIDOS[empleado_id] >= MAX_INTENTOS:
               raise HTTPException(
                  status_code=403,
                   detail="Demasiados intentos fallidos. Intenta más tarde."
+              )
+        raise HTTPException(
+           status_code=403,
+           detail=f"PIN incorrecto ({INTENTOS_FALLIDOS[empleado_id]}/{MAX_INTENTOS})"
         )
 
 # ✅ AQUÍ VA
