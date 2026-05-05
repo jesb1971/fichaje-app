@@ -167,11 +167,11 @@ def fichar(request: Request, empleado_id: str, pin: str, tipo: str = "presencial
         return any(ip.startswith(prefijo) for prefijo in IPS_PERMITIDAS)
 
     if tipo_acceso == "oficina" and not ip_valida(ip):
-    guardar_alerta(empleado_id, "FUERA_DE_SEDE", "Fichaje fuera de red", ip)
-    tipo = "remoto"
-    mensaje_extra = "⚠️ Has fichado fuera de una sede autorizada"
-else:
-    mensaje_extra = ""
+        guardar_alerta(empleado_id, "FUERA_DE_SEDE", "Fichaje fuera de red", ip)
+        tipo = "remoto"
+        mensaje_extra = "⚠️ Has fichado fuera de una sede autorizada"
+    else:
+        mensaje_extra = ""
 
     # 🏢 DATOS EMPRESA
     datos_emp = EMPLEADOS.get(empleado_id, {})
