@@ -99,6 +99,7 @@ def fichar(request: Request, empleado_id: str, pin: str, tipo: str = "presencial
 
     # 🔐 Validación PIN
     if PINS.get(empleado_id) != pin:
+        print(f"🚨 INTENTO FALLIDO: {empleado_id} desde IP {request.client.host}")
         raise HTTPException(status_code=403, detail="PIN incorrecto")
 
     # 🔒 CONTROL DE ACCESO POR IP
@@ -116,7 +117,7 @@ def fichar(request: Request, empleado_id: str, pin: str, tipo: str = "presencial
 
     # 🔒 CONTROL INTELIGENTE
     if tipo_acceso == "oficina" and not ip_valida(ip):
-        print(f"⚠️ Fichaje externo detectado: {empleado_id} desde IP {ip}")
+        print(f"⚠️ FICHAJE FUERA DE SEDE: {empleado_id} desde IP {ip}")
         tipo = "remoto"  # Se permite pero queda registrado como remoto
         
     # 🔍 NUEVO → detectar tipo automáticamente
@@ -159,6 +160,7 @@ def fichar(request: Request, empleado_id: str, pin: str, tipo: str = "presencial
         mensaje = "Salida registrada"
 
     else:
+        print(f"⚠️ DOBLE FICHAJE: {empleado_id} intentó fichar más de 2 veces")
         mensaje = "Ya has fichado entrada y salida hoy"
 
     conn.commit()
