@@ -138,33 +138,43 @@ def app_web():
 def fichar(request: Request, empleado_id: str, pin: str, tipo: str = "presencial"):
 
     ip = request.client.host
+    ahora = datetime.now()
 
-    # 🔒 BLOQUEO REAL POR BASE DE DATOS (PRIMERO DE TODO)
-    if intentos_recientes(empleado_id) >= 3:
+    # 🔒 INICIALIZAR CONTROL
+    if empleado_id not in INTENTOS_FALLIDOS:
+        INTENTOS_FALLIDOS[empleado_id] = []
+
+    # 🔒 LIMPIAR INTENTOS ANTIGUOS (últimos 5 minutos)
+    INTENTOS_FALLIDOS[empleado_id] = [
+        t for t in INTENTOS_FALLIDOS[empleado_id]
+        if (ahora - t).seconds < 300
+    ]
+
+    # 🔒 BLOQUEO REAL
+    if len(INTENTOS_FALLIDOS[empleado_id]) >= 3:
         raise HTTPException(
             status_code=403,
-            detail="Demasiados intentos recientes. Intenta más tarde."
+            detail="Demasiados intentos. Espera 5 minutos."
         )
 
-    # 🔐 CONTROL DE INTENTOS EN MEMORIA (opcional pero útil para feedback)
-    if empleado_id not in INTENTOS_FALLIDOS:
-        INTENTOS_FALLIDOS[empleado_id] = 0
-
+    # 🔐 VALIDAR PIN
     if PINS.get(empleado_id) != pin:
-        INTENTOS_FALLIDOS[empleado_id] += 1
+        INTENTOS_FALLIDOS[empleado_id].append(ahora)
 
-        guardar_alerta(empleado_id, "PIN_INCORRECTO", "Intento de acceso con PIN incorrecto", ip)
-
-        print(f"❌ Intento {INTENTOS_FALLIDOS[empleado_id]} de {empleado_id}")
+        guardar_alerta(
+            empleado_id,
+            "PIN_INCORRECTO",
+            "Intento de acceso con PIN incorrecto",
+            ip
+        )
 
         raise HTTPException(
             status_code=403,
-            detail=f"PIN incorrecto ({INTENTOS_FALLIDOS[empleado_id]}/{MAX_INTENTOS})"
+            detail=f"PIN incorrecto ({len(INTENTOS_FALLIDOS[empleado_id])}/3)"
         )
 
     # ✅ PIN CORRECTO → RESET
-    print(f"✅ PIN correcto {empleado_id}")
-    INTENTOS_FALLIDOS[empleado_id] = 0
+    INTENTOS_FALLIDOS[empleado_id] = []
 
     # 🔒 CONTROL DE ACCESO POR IP
     tipo_acceso = EMPLEADOS.get(empleado_id, {}).get("tipo_acceso", "oficina")
@@ -178,20 +188,17 @@ def fichar(request: Request, empleado_id: str, pin: str, tipo: str = "presencial
     def ip_valida(ip):
         return any(ip.startswith(prefijo) for prefijo in IPS_PERMITIDAS)
 
-    # 🔒 CONTROL INTELIGENTE
     if tipo_acceso == "oficina" and not ip_valida(ip):
-        guardar_alerta(empleado_id, "FUERA_DE_SEDE", "Fichaje fuera de red autorizada", ip)
-        print(f"⚠️ FICHAJE FUERA DE SEDE: {empleado_id} desde IP {ip}")
+        guardar_alerta(empleado_id, "FUERA_DE_SEDE", "Fichaje fuera de red", ip)
         tipo = "remoto"
 
-    # 🏢 Datos empresa
+    # 🏢 DATOS EMPRESA
     datos_emp = EMPLEADOS.get(empleado_id, {})
     empresa = datos_emp.get("empresa", "Sin empresa")
 
     conn = database.conectar()
     cursor = conn.cursor()
 
-    ahora = datetime.now()
     fecha = ahora.strftime("%Y-%m-%d")
     hora = ahora.strftime("%H:%M:%S")
 
@@ -219,7 +226,6 @@ def fichar(request: Request, empleado_id: str, pin: str, tipo: str = "presencial
 
     else:
         guardar_alerta(empleado_id, "DOBLE_FICHAJE", "Intento de fichar más de 2 veces", ip)
-        print(f"⚠️ DOBLE FICHAJE: {empleado_id}")
         mensaje = "Ya has fichado entrada y salida hoy"
 
     conn.commit()
