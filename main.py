@@ -73,6 +73,21 @@ def guardar_alerta(empleado_id, tipo_alerta, descripcion, ip):
     conn.commit()
     conn.close()
 
+def intentos_recientes(empleado_id, minutos=5):
+    conn = database.conectar()
+    cursor = conn.cursor()
+
+    cursor.execute("""
+    SELECT COUNT(*) FROM alertas
+    WHERE empleado_id = ?
+    AND tipo_alerta = 'PIN_INCORRECTO'
+    AND datetime(fecha || ' ' || hora) >= datetime('now', ?)
+    """, (empleado_id, f'-{minutos} minutes'))
+
+    total = cursor.fetchone()[0]
+    conn.close()
+    return total
+
 # 🔐 PINES (SIN CAMBIOS)
 PINS = {
     "pilar_ganuza": "1111",
@@ -124,20 +139,14 @@ def fichar(request: Request, empleado_id: str, pin: str, tipo: str = "presencial
 
     ip = request.client.host
 
-    # 🔒 CONTROL DE BLOQUEO REAL
-    if empleado_id in BLOQUEOS:
-        if datetime.now() < BLOQUEOS[empleado_id]:
-            print(f"⛔ BLOQUEADO: {empleado_id}")
-            raise HTTPException(
-                status_code=403,
-                detail="Usuario bloqueado temporalmente. Intenta más tarde."
-            )
-        else:
-            print(f"✅ DESBLOQUEADO: {empleado_id}")
-            del BLOQUEOS[empleado_id]
-            INTENTOS_FALLIDOS[empleado_id] = 0
+    # 🔒 BLOQUEO REAL POR BASE DE DATOS (PRIMERO DE TODO)
+    if intentos_recientes(empleado_id) >= 3:
+        raise HTTPException(
+            status_code=403,
+            detail="Demasiados intentos recientes. Intenta más tarde."
+        )
 
-    # 🔐 CONTROL DE INTENTOS
+    # 🔐 CONTROL DE INTENTOS EN MEMORIA (opcional pero útil para feedback)
     if empleado_id not in INTENTOS_FALLIDOS:
         INTENTOS_FALLIDOS[empleado_id] = 0
 
@@ -147,16 +156,6 @@ def fichar(request: Request, empleado_id: str, pin: str, tipo: str = "presencial
         guardar_alerta(empleado_id, "PIN_INCORRECTO", "Intento de acceso con PIN incorrecto", ip)
 
         print(f"❌ Intento {INTENTOS_FALLIDOS[empleado_id]} de {empleado_id}")
-
-        if INTENTOS_FALLIDOS[empleado_id] >= MAX_INTENTOS:
-            BLOQUEOS[empleado_id] = datetime.now() + timedelta(minutes=TIEMPO_BLOQUEO)
-
-            print(f"🚨 BLOQUEANDO A {empleado_id}")
-
-            raise HTTPException(
-                status_code=403,
-                detail=f"Demasiados intentos. Bloqueado {TIEMPO_BLOQUEO} minutos."
-            )
 
         raise HTTPException(
             status_code=403,
@@ -168,7 +167,6 @@ def fichar(request: Request, empleado_id: str, pin: str, tipo: str = "presencial
     INTENTOS_FALLIDOS[empleado_id] = 0
 
     # 🔒 CONTROL DE ACCESO POR IP
-    ip = request.client.host
     tipo_acceso = EMPLEADOS.get(empleado_id, {}).get("tipo_acceso", "oficina")
 
     IPS_PERMITIDAS = [
