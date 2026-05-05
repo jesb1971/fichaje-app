@@ -157,21 +157,20 @@ def fichar(request: Request, empleado_id: str, pin: str, tipo: str = "presencial
             detail="Demasiados intentos. Espera 5 minutos."
         )
 
-    # 🔐 VALIDAR PIN
-    if PINS.get(empleado_id) != pin:
-        INTENTOS_FALLIDOS[empleado_id].append(ahora)
+   # 🔐 VALIDAR PIN (VERSIÓN SEGURA)
+   if PINS.get(empleado_id) != pin:
 
-        guardar_alerta(
-            empleado_id,
-            "PIN_INCORRECTO",
-            "Intento de acceso con PIN incorrecto",
-            ip
-        )
+      guardar_alerta(
+        empleado_id,
+        "PIN_INCORRECTO",
+        "Intento de acceso con PIN incorrecto",
+        ip
+   )
 
-        raise HTTPException(
-            status_code=403,
-            detail=f"PIN incorrecto ({len(INTENTOS_FALLIDOS[empleado_id])}/3)"
-        )
+      raise HTTPException(
+         status_code=403,
+         detail="PIN incorrecto"
+      )
 
     # ✅ PIN CORRECTO → RESET
     INTENTOS_FALLIDOS[empleado_id] = []
