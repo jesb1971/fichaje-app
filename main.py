@@ -118,6 +118,18 @@ def app_web():
 @app.get("/fichar")
 def fichar(request: Request, empleado_id: str, pin: str, tipo: str = "presencial"):
 
+    # 🔒 CONTROL DE BLOQUEO
+    if empleado_id in BLOQUEOS:
+        if datetime.now() < BLOQUEOS[empleado_id]:
+            raise HTTPException(
+                status_code=403,
+                detail="Usuario bloqueado temporalmente. Intenta más tarde."
+            )
+        else:
+            # desbloqueo automático
+            del BLOQUEOS[empleado_id]
+            INTENTOS_FALLIDOS[empleado_id] = 0
+
     # 🔐 CONTROL DE INTENTOS DE PIN
     if empleado_id not in INTENTOS_FALLIDOS:
         INTENTOS_FALLIDOS[empleado_id] = 0
@@ -129,9 +141,11 @@ def fichar(request: Request, empleado_id: str, pin: str, tipo: str = "presencial
         guardar_alerta(empleado_id, "PIN_INCORRECTO", "Intento de acceso con PIN incorrecto", ip)
 
         if INTENTOS_FALLIDOS[empleado_id] >= MAX_INTENTOS:
+            BLOQUEOS[empleado_id] = datetime.now() + timedelta(minutes=TIEMPO_BLOQUEO)
+
             raise HTTPException(
                 status_code=403,
-                detail="Demasiados intentos fallidos. Intenta más tarde."
+                detail=f"Demasiados intentos. Bloqueado {TIEMPO_BLOQUEO} minutos."
             )
 
         raise HTTPException(
@@ -203,6 +217,7 @@ def fichar(request: Request, empleado_id: str, pin: str, tipo: str = "presencial
     conn.close()
 
     return {"mensaje": mensaje, "hora": hora}
+
 @app.get("/estado")
 def estado(empleado_id: str):
     conn = database.conectar()
@@ -307,6 +322,7 @@ def exportar_excel():
     return FileResponse(archivo, filename=archivo)
 
 # 🔥 QR
+
 @app.get("/qr", response_class=HTMLResponse)
 def generar_qr():
 
