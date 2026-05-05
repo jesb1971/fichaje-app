@@ -196,7 +196,7 @@ def ver_fichajes():
     cursor = conn.cursor()
 
     cursor.execute("""
-    SELECT id, empleado_id, fecha, hora_entrada, hora_salida, tipo, empresa 
+    SELECT id, empleado_id, fecha, hora_entrada, hora_salida, tipo, empresa, ip 
     FROM fichajes
     ORDER BY fecha DESC, hora_entrada DESC
     """)
@@ -221,6 +221,7 @@ def ver_fichajes():
             "entrada": fila[3],
             "salida": fila[4],
             "tipo": fila[5]
+	    "ip": fila[6] if len(fila) > 6 else "-"
         })
 
     return {"fichajes": resultado}
