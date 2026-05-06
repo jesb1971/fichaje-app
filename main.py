@@ -178,3 +178,26 @@ def fichar(request: Request, empleado_id: str, pin: str):
     conn.close()
 
     return {"mensaje": mensaje, "hora": hora}
+    
+    @app.get("/estado")
+    def estado(empleado_id: str):
+        conn = database.conectar()
+        cursor = conn.cursor()
+
+        hoy = datetime.now().strftime("%Y-%m-%d")
+
+        cursor.execute("""
+        SELECT hora_entrada, hora_salida
+        FROM fichajes
+        WHERE empleado_id = ? AND fecha = ?
+        """, (empleado_id, hoy))
+
+        registro = cursor.fetchone()
+        conn.close()
+
+        if registro is None:
+            return {"estado": "sin_fichar"}
+        elif registro[1] is None:
+            return {"estado": "entrada_hecha"}
+        else:
+            return {"estado": "completo"}
