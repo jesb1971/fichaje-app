@@ -1,3 +1,4 @@
+from zoneinfo import ZoneInfo
 from fastapi import FastAPI, Request, HTTPException
 from fastapi.responses import FileResponse, HTMLResponse
 from fastapi.staticfiles import StaticFiles
@@ -70,7 +71,7 @@ def guardar_alerta(empleado_id, tipo_alerta, descripcion, ip):
     conn = database.conectar()
     cursor = conn.cursor()
 
-    ahora = datetime.now()
+    ahora = datetime.now(ZoneInfo("Atlantic/Canary"))
 
     cursor.execute("""
     INSERT INTO alertas (empleado_id, tipo_alerta, descripcion, ip, fecha, hora)
@@ -144,7 +145,7 @@ def fichar(request: Request, empleado_id: str, pin: str):
     conn = database.conectar()
     cursor = conn.cursor()
 
-    ahora = datetime.now()
+    ahora = datetime.now(ZoneInfo("Atlantic/Canary"))
     fecha = ahora.strftime("%Y-%m-%d")
     hora = ahora.strftime("%H:%M:%S")
 
