@@ -81,18 +81,15 @@ def guardar_alerta(empleado_id, tipo_alerta, descripcion, ip):
     conn.commit()
     conn.close()
 
-# 🔹 INICIO
 @app.get("/")
 def inicio():
     return {"mensaje": "Sistema de fichaje activo"}
 
-# 🔹 APP WEB
 @app.get("/app", response_class=HTMLResponse)
 def app_web():
     with open(os.path.join(BASE_DIR, "templates", "index.html"), encoding="utf-8") as f:
         return HTMLResponse(content=f.read())
 
-# 🔥 FICHAR
 @app.get("/fichar")
 def fichar(request: Request, empleado_id: str, pin: str):
 
@@ -103,7 +100,7 @@ def fichar(request: Request, empleado_id: str, pin: str):
         guardar_alerta(empleado_id, "PIN_INCORRECTO", "Intento de acceso con PIN incorrecto", ip)
         raise HTTPException(status_code=403, detail="PIN incorrecto")
 
-    # 🔒 VALIDACIÓN IP (COMO ESTABA)
+    # 🔒 VALIDACIÓN IP (ORIGINAL)
     IPS_PERMITIDAS = ["127.0.0.1", "192.168.0.", "192.168.1."]
 
     def ip_valida(ip):
