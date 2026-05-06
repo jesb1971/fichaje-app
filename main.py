@@ -239,3 +239,9 @@ def ver_fichajes():
         })
 
     return {"fichajes": resultado}
+    
+@app.get("/admin")
+def panel_admin(token: str = None):
+    if token != TOKEN:
+        raise HTTPException(status_code=403, detail="No autorizado")
+    return FileResponse(os.path.join(BASE_DIR, "templates", "admin.html"))
