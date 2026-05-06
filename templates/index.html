@@ -147,6 +147,10 @@ function fichar() {
                     ${data.mensaje} - ${data.hora}
                 </div>`;
         }
+		
+		// 🔄 LIMPIAR CAMPOS
+		document.getElementById("empleado").value = "";
+		document.getElementById("pin").value = "";
     })
     .catch(err => {
 
