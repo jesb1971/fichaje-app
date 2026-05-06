@@ -61,7 +61,7 @@ PINS = {
     "cristo_diaz": "7245",
     "laura_perez": "2741",
     "marta_cano": "1124",
-    "soledad_fernandez": "4040",
+    "soledad_fernandez": "5315",
     "candelaria_rodriguez": "6041",
     "natalia_diaz": "1797"
 }
@@ -130,7 +130,7 @@ def fichar(request: Request, empleado_id: str, pin: str):
         raise HTTPException(status_code=403, detail="PIN incorrecto")
 
     # 🔒 VALIDACIÓN IP (ORIGINAL)
-    IPS_PERMITIDAS = ["127.0.0.1", "192.168.0.", "192.168.1."]
+    IPS_PERMITIDAS = ["127.0.0.1", "192.168.0.", "192.168.1.","92.185.36.146"]
 
     def ip_valida(ip):
         return any(ip.startswith(prefijo) for prefijo in IPS_PERMITIDAS)
