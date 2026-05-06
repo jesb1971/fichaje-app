@@ -119,17 +119,15 @@ function fichar() {
         return;
     }
 
-    resultado.innerHTML = ""; // limpiar
+    resultado.innerHTML = "";
 
     fetch(`/fichar?empleado_id=${empleado}&pin=${pin}`)
-    .then(async res => {
-        let data = await res.json();
+    .then(res => res.json().then(data => ({ ok: res.ok, data })))
+    .then(({ ok, data }) => {
 
-        if (!res.ok) throw data;
-
-        return data;
-    })
-    .then(data => {
+        if (!ok) {
+            throw data;
+        }
 
         // 🔴 FUERA DE SEDE
         if (data.aviso) {
@@ -138,24 +136,26 @@ function fichar() {
                     ${data.mensaje} - ${data.hora}<br>
                     ${data.aviso}
                 </div>`;
-        }
-
-        // 🟢 NORMAL
-        else {
+        } else {
+            // 🟢 NORMAL
             resultado.innerHTML = `
                 <div style="background:#e6ffe6;color:#006600;padding:15px;border-radius:8px;">
                     ${data.mensaje} - ${data.hora}
                 </div>`;
         }
 
-        // 🔄 LIMPIAR SOLO PIN
+        // 🔄 SOLO LIMPIAR PIN (NO EMPLEADO)
         document.getElementById("pin").value = "";
 
-        // 🔁 ACTUALIZAR ESTADO AUTOMÁTICO (AQUÍ ES DONDE VA)
-        actualizarEstado();
+        // 🔁 ACTUALIZAR ESTADO (BIEN UBICADO)
+        if (typeof actualizarEstado === "function") {
+            actualizarEstado();
+        }
 
     })
     .catch(err => {
+
+        console.error("ERROR:", err);
 
         resultado.innerHTML = `
             <div style="background:#fff3cd;color:#856404;padding:15px;border-radius:8px;">
