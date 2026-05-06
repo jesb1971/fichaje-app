@@ -116,7 +116,12 @@ def app_web():
 @app.get("/fichar")
 def fichar(request: Request, empleado_id: str, pin: str):
 
-    ip = request.client.host
+    x_forwarded_for = request.headers.get("x-forwarded-for")
+
+    if x_forwarded_for:
+        ip = x_forwarded_for.split(",")[0].strip()
+    else:
+        ip = request.client.host
 
     # 🔐 VALIDAR PIN
     if PINS.get(empleado_id) != pin:
