@@ -115,6 +115,7 @@ tr:nth-child(even) {
             <th>Salida</th>
             <th>Horas</th>
             <th>Tipo</th>
+			<th>IP</th>
         </tr>
     </thead>
     <tbody id="tabla"></tbody>
@@ -214,6 +215,7 @@ function pintarTabla(datos) {
                 <td>${f.salida || "-"}</td>
                 <td>${horas}</td>
                 <td>${tipoVisual}</td>
+				<td>${f.ip || "-"}</td>
             </tr>
         `;
 
