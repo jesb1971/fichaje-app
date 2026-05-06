@@ -202,3 +202,40 @@ def fichar(request: Request, empleado_id: str, pin: str):
             return {"estado": "entrada_hecha"}
         else:
             return {"estado": "completo"}
+            
+@app.get("/ver_fichajes")
+def ver_fichajes():
+
+    conn = database.conectar()
+    cursor = conn.cursor()
+
+    cursor.execute("""
+        SELECT id, empleado_id, fecha, hora_entrada, hora_salida, tipo, empresa, ip
+        FROM fichajes
+        ORDER BY fecha DESC, hora_entrada DESC
+    """)
+
+    datos = cursor.fetchall()
+    conn.close()
+
+    resultado = []
+
+    for fila in datos:
+        emp_id = fila[1]
+
+        nombre = EMPLEADOS.get(emp_id, {}).get("nombre", emp_id)
+        empresa = EMPLEADOS.get(emp_id, {}).get("empresa", "Sin empresa")
+
+        resultado.append({
+            "id": fila[0],
+            "empleado": emp_id,
+            "nombre": nombre,
+            "empresa": empresa,
+            "fecha": fila[2],
+            "entrada": fila[3],
+            "salida": fila[4],
+            "tipo": fila[5],
+            "ip": fila[7] if len(fila) > 7 else "-"
+        })
+
+    return {"fichajes": resultado}
