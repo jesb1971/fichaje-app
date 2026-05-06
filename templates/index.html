@@ -149,7 +149,6 @@ function fichar() {
         }
 		
 		// 🔄 LIMPIAR CAMPOS
-		document.getElementById("empleado").value = "";
 		document.getElementById("pin").value = "";
     })
     .catch(err => {
@@ -160,6 +159,34 @@ function fichar() {
             </div>`;
     });
 }
+
+actualizarEstado();
+.then(data => {
+
+    // 🔴 FUERA DE SEDE
+    if (data.aviso) {
+        resultado.innerHTML = `
+            <div style="background:#ffe5e5;color:#b30000;padding:15px;border-radius:8px;">
+                ${data.mensaje} - ${data.hora}<br>
+                ${data.aviso}
+            </div>`;
+    }
+
+    // 🟢 NORMAL
+    else {
+        resultado.innerHTML = `
+            <div style="background:#e6ffe6;color:#006600;padding:15px;border-radius:8px;">
+                ${data.mensaje} - ${data.hora}
+            </div>`;
+    }
+
+    // 🔄 LIMPIAR SOLO PIN
+    document.getElementById("pin").value = "";
+
+    // 🔁 ACTUALIZAR ESTADO AUTOMÁTICO
+    actualizarEstado();
+
+})
 
 </script>
 
