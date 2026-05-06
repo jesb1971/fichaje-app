@@ -1,4 +1,3 @@
-Me dio error, te doy el código completo para que me lo corrijas:
 from fastapi import FastAPI, Request, HTTPException
 from fastapi.responses import FileResponse, HTMLResponse
 from fastapi.staticfiles import StaticFiles
