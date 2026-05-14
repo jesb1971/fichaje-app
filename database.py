@@ -1,7 +1,7 @@
 import sqlite3
 
 def conectar():
-    conn = sqlite3.connect("fichajes.db")
+    conn = sqlite3.connect("/var/data/fichajes.db")
     return conn
 
 def crear_tabla():
