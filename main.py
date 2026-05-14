@@ -260,3 +260,47 @@ def panel_admin(token: str = None):
     if token != TOKEN:
         raise HTTPException(status_code=403, detail="No autorizado")
     return FileResponse(os.path.join(BASE_DIR, "templates", "admin.html"))
+    
+    @app.get("/exportar_excel")
+def exportar_excel(fecha_inicio: str = None, fecha_fin: str = None):
+
+    conn = database.conectar()
+    cursor = conn.cursor()
+
+    query = """
+        SELECT empleado_id, fecha, hora_entrada, hora_salida, tipo, empresa
+        FROM fichajes
+    """
+
+    params = []
+
+    if fecha_inicio and fecha_fin:
+        query += " WHERE fecha BETWEEN ? AND ?"
+        params = [fecha_inicio, fecha_fin]
+
+    query += " ORDER BY fecha DESC, hora_entrada DESC"
+
+    cursor.execute(query, params)
+    datos = cursor.fetchall()
+    conn.close()
+
+    # Crear Excel
+    wb = openpyxl.Workbook()
+    ws = wb.active
+    ws.title = "Fichajes"
+
+    # Cabecera
+    ws.append(["Empleado", "Fecha", "Entrada", "Salida", "Tipo", "Empresa"])
+
+    # Datos
+    for fila in datos:
+        ws.append(fila)
+
+    ruta = "/var/data/fichajes_export.xlsx"
+    wb.save(ruta)
+
+    return FileResponse(
+        ruta,
+        filename="fichajes.xlsx",
+        media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+    )
