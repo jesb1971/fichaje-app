@@ -44,6 +44,10 @@ EMPLEADOS = {
     "jose_sanchez": {"nombre": "José Sánchez", "empresa": "GRUPO ICADEPRO", "tipo_acceso": "oficina"},
     "maria_eugenia_lopez": {"nombre": "Mª Eugenia López Baez", "empresa": "GRUPO ICADEPRO", "tipo_acceso": "oficina"},
     "begona_bonis": {"nombre": "Begoña de Bonis", "empresa": "GRUPO ICADEPRO", "tipo_acceso": "movil"},
+    "sonia_gomez": {"nombre": "Sonia Esther Gómez Díaz", "empresa": "GRUPO ICADEPRO", "tipo_acceso": "oficina"},
+    "andres_caceres": {"nombre": "Andrés del Rosario Lorenzo Cáceres Mascareño", "empresa": "GRUPO ICADEPRO", "tipo_acceso": "oficina"},
+    "arsenio_cabrera": {"nombre": "Arsenio Ángel Cabrera", "empresa": "GRUPO ICADEPRO", "tipo_acceso": "oficina"},
+    "maria_moure": {"nombre": "María Nieves Moure Naveiro", "empresa": "GRUPO ICADEPRO", "tipo_acceso": "oficina"},
 }
 
 # 🔐 PINES
@@ -63,7 +67,11 @@ PINS = {
     "marta_cano": "1124",
     "soledad_fernandez": "5315",
     "candelaria_rodriguez": "6041",
-    "natalia_diaz": "1797"
+    "natalia_diaz": "1797",
+    "sonia_gomez": "6805",
+    "andres_caceres": "6771",
+    "arsenio_cabrera": "4389",
+    "maria_moure": "1118"
 }
 
 # 🔴 ALERTAS
@@ -130,7 +138,9 @@ def fichar(request: Request, empleado_id: str, pin: str):
         raise HTTPException(status_code=403, detail="PIN incorrecto")
 
     # 🔒 VALIDACIÓN IP (ORIGINAL)
-    IPS_PERMITIDAS = ["92.185.36.146"]
+    IPS_PERMITIDAS = ["92.185.36.146",
+                      "90.75.200.225",
+                      "92.185.42.206"]
 
     def ip_valida(ip):
         return any(ip.startswith(prefijo) for prefijo in IPS_PERMITIDAS)
