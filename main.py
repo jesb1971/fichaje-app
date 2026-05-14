@@ -48,7 +48,7 @@ EMPLEADOS = {
 
 # 🔐 PINES
 PINS = {
-    "pilar_ganuza": "7942",
+    "pilar_ganuza": "6857",
     "begona_bonis": "9654",
     "maria_eugenia_lopez": "8024",
     "luichy_jorge": "2985",
