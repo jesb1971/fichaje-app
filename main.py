@@ -19,8 +19,8 @@ database.crear_tabla()
 database.crear_tabla_alertas()
 
 # 🔐 CONFIG
-USUARIO = "admin"
-PASSWORD = "1234"
+USUARIO = "rrhh"
+PASSWORD = "Icadepro2026!"
 TOKEN = "seguro123"
 
 # 🏢 EMPLEADOS
