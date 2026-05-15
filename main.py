@@ -300,7 +300,7 @@ database.crear_tabla_alertas()
 
 # 🔐 CONFIG
 USUARIO = "rrhh"
-PASSWORD = "IcdePro#2026RRHH"
+PASSWORD = "Icadepro2026!"
 TOKEN = "seguro123"
 
 # 🏢 EMPLEADOS
