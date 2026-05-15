@@ -52,7 +52,16 @@ function login() {
     let user = document.getElementById("usuario").value;
     let pass = document.getElementById("password").value;
 
-    fetch(`/login?usuario=${user}&password=${pass}`)
+    fetch("/login", {
+    method: "POST",
+    headers: {
+        "Content-Type": "application/json"
+    },
+    body: JSON.stringify({
+        usuario: user,
+        password: pass
+    })
+})
     .then(res => res.json())
     .then(data => {
 
