@@ -55,10 +55,10 @@ tr:nth-child(even) {
 }
 
 /* colores por empresa */
-.ICADEPRO { background: #cfe2ff !important; }      /* Azul */
-.PROYECTOS { background: #d1e7dd !important; }     /* Verde */
-.PROICAFOR { background: #e2d9f3 !important; }     /* Morado */
-.GRUPO { background: #ffe5b4 !important; }         /* Naranja */
+.ICADEPRO { background: #cfe2ff !important; }
+.PROYECTOS { background: #d1e7dd !important; }
+.PROICAFOR { background: #e2d9f3 !important; }
+.GRUPO { background: #ffe5b4 !important; }
 
 /* PDF */
 @media print {
@@ -81,7 +81,8 @@ tr:nth-child(even) {
 
 <div class="filtros">
 
-    <input type="date" id="filtroFecha">
+    <input type="date" id="fechaInicio">
+	<input type="date" id="fechaFin">
 
     <select id="filtroEmpleado">
         <option value="">Todos los empleados</option>
@@ -97,9 +98,8 @@ tr:nth-child(even) {
 
     <button onclick="filtrar()">Filtrar</button>
 
-    <a href="/exportar_excel">
-        <button>Descargar Excel</button>
-    </a>
+    <!-- 🔥 CAMBIO AQUÍ -->
+    <button onclick="descargarExcel()">Descargar Excel</button>
 
     <button onclick="window.print()">Descargar PDF</button>
 
@@ -115,7 +115,7 @@ tr:nth-child(even) {
             <th>Salida</th>
             <th>Horas</th>
             <th>Tipo</th>
-			<th>IP</th>
+            <th>IP</th>
         </tr>
     </thead>
     <tbody id="tabla"></tbody>
@@ -140,10 +140,10 @@ const nombres = {
     "soledad_fernandez": "Soledad Fernández",
     "candelaria_rodriguez": "Candelaria Rodríguez",
     "natalia_diaz": "Natalia Díaz",
-	"sonia_gomez": "Sonia Esther Gómez Díaz",
-	"andres_caceres": "Andrés del Rosario Lorenzo Cáceres Mascareño",
-	"arsenio_cabrera": "Arsenio Angel Angel Cabrera",
-	"maria_moure": "Mª Nieves Moure Naveiro"
+    "sonia_gomez": "Sonia Esther Gómez Díaz",
+    "andres_caceres": "Andrés del Rosario Lorenzo Cáceres Mascareño",
+    "arsenio_cabrera": "Arsenio Angel Angel Cabrera",
+    "maria_moure": "Mª Nieves Moure Naveiro"
 };
 
 let datosGlobales = [];
@@ -205,7 +205,6 @@ function pintarTabla(datos) {
         let horas = calcularHoras(f.entrada, f.salida);
         let clase = obtenerClaseEmpresa(f.empresa);
 
-        // 🔥 NUEVO → tipo visual
         let tipoVisual = f.tipo === "remoto"
             ? '<span style="color:red;font-weight:bold;">REMOTO</span>'
             : '<span style="color:green;font-weight:bold;">PRESENCIAL</span>';
@@ -219,22 +218,33 @@ function pintarTabla(datos) {
                 <td>${f.salida || "-"}</td>
                 <td>${horas}</td>
                 <td>${tipoVisual}</td>
-				<td>${f.ip || "-"}</td>
+                <td>${f.ip || "-"}</td>
             </tr>
         `;
 
         tabla.innerHTML += fila;
     });
 }
+
 function filtrar() {
 
-    let fecha = document.getElementById("filtroFecha").value;
+    let fechaInicio = document.getElementById("fechaInicio").value;
+    let fechaFin = document.getElementById("fechaFin").value;
     let empleado = document.getElementById("filtroEmpleado").value;
     let empresa = document.getElementById("filtroEmpresa").value;
 
     let filtrados = datosGlobales.filter(f => {
 
-        let okFecha = !fecha || f.fecha === fecha;
+        let okFecha = true;
+
+        if (fechaInicio && fechaFin) {
+            okFecha = f.fecha >= fechaInicio && f.fecha <= fechaFin;
+        } else if (fechaInicio) {
+            okFecha = f.fecha >= fechaInicio;
+        } else if (fechaFin) {
+            okFecha = f.fecha <= fechaFin;
+        }
+
         let okEmpleado = !empleado || f.empleado === empleado;
         let okEmpresa = !empresa || f.empresa === empresa;
 
@@ -244,7 +254,49 @@ function filtrar() {
     pintarTabla(filtrados);
 }
 
+/* 🔥 NUEVO */
+function descargarExcel() {
+
+    let fecha = document.getElementById("filtroFecha").value;
+    let empleado = document.getElementById("filtroEmpleado").value;
+
+    let url = "/exportar_excel?";
+
+    if (fecha) {
+        url += `fecha_inicio=${fecha}&fecha_fin=${fecha}&`;
+    }
+
+    if (empleado) {
+        url += `empleado_id=${empleado}&`;
+    }
+
+    window.open(url, "_blank");
+}
+
 cargarDatos();
+
+function descargarPDF() {
+
+    let fecha = document.getElementById("filtroFecha").value;
+    let empleado = document.getElementById("filtroEmpleado").value;
+    let empresa = document.getElementById("filtroEmpresa").value;
+
+    let url = "/exportar_pdf?";
+
+    if (fecha) {
+        url += `fecha_inicio=${fecha}&fecha_fin=${fecha}&`;
+    }
+
+    if (empleado) {
+        url += `empleado_id=${empleado}&`;
+    }
+
+    if (empresa) {
+        url += `empresa=${encodeURIComponent(empresa)}&`;
+    }
+
+    window.open(url, "_blank");
+}
 
 </script>
 

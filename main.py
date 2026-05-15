@@ -586,3 +586,64 @@ def exportar_excel(fecha_inicio: str = None, fecha_fin: str = None, empleado_id:
         filename="fichajes.xlsx",
         media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
     )
+    
+    # ✅ EXPORTAR PDF (NUEVO, NO TOCA NADA EXISTENTE)
+from reportlab.lib.pagesizes import letter
+from reportlab.platypus import SimpleDocTemplate, Table, TableStyle
+from reportlab.lib import colors
+
+@app.get("/exportar_pdf")
+def exportar_pdf(fecha_inicio: str = None, fecha_fin: str = None, empleado_id: str = None, empresa: str = None):
+
+    conn = database.conectar()
+    cursor = conn.cursor()
+
+    query = """
+        SELECT empleado_id, fecha, hora_entrada, hora_salida, tipo, empresa
+        FROM fichajes
+        WHERE 1=1
+    """
+
+    params = []
+
+    # 🔹 Filtro por fechas
+    if fecha_inicio and fecha_fin:
+        query += " AND fecha BETWEEN ? AND ?"
+        params.extend([fecha_inicio, fecha_fin])
+
+    # 🔹 Filtro por empleado
+    if empleado_id:
+        query += " AND empleado_id = ?"
+        params.append(empleado_id)
+
+    # 🔹 Filtro por empresa
+    if empresa:
+        query += " AND empresa = ?"
+        params.append(empresa)
+
+    query += " ORDER BY fecha DESC, hora_entrada DESC"
+
+    cursor.execute(query, params)
+    datos = cursor.fetchall()
+    conn.close()
+
+    ruta = "/var/data/fichajes.pdf"
+
+    doc = SimpleDocTemplate(ruta, pagesize=letter)
+
+    tabla_data = [["Empleado", "Fecha", "Entrada", "Salida", "Tipo", "Empresa"]]
+
+    for fila in datos:
+        tabla_data.append(list(fila))
+
+    tabla = Table(tabla_data)
+
+    tabla.setStyle(TableStyle([
+        ("BACKGROUND", (0,0), (-1,0), colors.grey),
+        ("TEXTCOLOR",(0,0),(-1,0),colors.white),
+        ("GRID", (0,0), (-1,-1), 1, colors.black)
+    ]))
+
+    doc.build([tabla])
+
+    return FileResponse(ruta, filename="fichajes.pdf", media_type="application/pdf")
