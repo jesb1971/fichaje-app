@@ -573,10 +573,21 @@ def exportar_excel(fecha_inicio: str = None, fecha_fin: str = None, empleado_id:
     ws = wb.active
     ws.title = "Fichajes"
 
-    ws.append(["Empleado", "Fecha", "Entrada", "Salida", "Tipo", "Empresa"])
+    ws.append(["Empleado","Empresa","Fecha","Entrada","Salida","Horas","Tipo"])
 
     for fila in datos:
-        ws.append(fila)
+        empleado, fecha, entrada, salida, tipo, empresa = fila
+        
+         # cálculo horas
+        horas = ""
+        if entrada and salida:
+            h1 = datetime.strptime(entrada, "%H:%M:%S")
+            h2 = datetime.strptime(salida, "%H:%M:%S")
+            diff = h2 - h1
+            horas = f"{diff.seconds//3600}h {(diff.seconds%3600)//60}m"
+
+        nombre = EMPLEADOS.get(empleado, {}).get("nombre", empleado)
+        ws.append([nombre, empresa, fecha, entrada, salida, horas, tipo])
 
     ruta = "/var/data/fichajes_export.xlsx"
     wb.save(ruta)
