@@ -257,13 +257,18 @@ function filtrar() {
 /* 🔥 NUEVO */
 function descargarExcel() {
 
-    let fecha = document.getElementById("filtroFecha").value;
+    let fechaInicio = document.getElementById("fechaInicio").value;
+    let fechaFin = document.getElementById("fechaFin").value;
     let empleado = document.getElementById("filtroEmpleado").value;
 
     let url = "/exportar_excel?";
 
-    if (fecha) {
-        url += `fecha_inicio=${fecha}&fecha_fin=${fecha}&`;
+    if (fechaInicio && fechaFin) {
+        url += `fecha_inicio=${fechaInicio}&fecha_fin=${fechaFin}&`;
+    } else if (fechaInicio) {
+        url += `fecha_inicio=${fechaInicio}&fecha_fin=${fechaInicio}&`;
+    } else if (fechaFin) {
+        url += `fecha_inicio=${fechaFin}&fecha_fin=${fechaFin}&`;
     }
 
     if (empleado) {
@@ -272,8 +277,6 @@ function descargarExcel() {
 
     window.open(url, "_blank");
 }
-
-cargarDatos();
 
 function descargarPDF() {
 
