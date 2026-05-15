@@ -189,3 +189,17 @@ def exportar_excel():
     wb.save(ruta)
 
     return FileResponse(ruta,filename="fichajes.xlsx")
+    
+    # 🔐 PANEL ADMIN (LO QUE TE FALTA)
+@app.get("/admin", response_class=HTMLResponse)
+def panel_admin(token: str = None):
+    if token != TOKEN:
+        raise HTTPException(status_code=403, detail="No autorizado")
+
+    ruta = os.path.join(BASE_DIR, "templates", "admin.html")
+
+    if not os.path.exists(ruta):
+        return {"error": "No existe admin.html"}
+
+    with open(ruta, encoding="utf-8") as f:
+        return HTMLResponse(content=f.read())
