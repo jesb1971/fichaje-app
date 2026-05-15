@@ -178,10 +178,12 @@ def exportar_excel(fecha_inicio: str = None, fecha_fin: str = None, empleado_id:
 
     params = []
 
+    # 🔹 Filtro por fechas
     if fecha_inicio and fecha_fin:
         query += " AND fecha BETWEEN ? AND ?"
         params.extend([fecha_inicio, fecha_fin])
 
+    # 🔹 Filtro por empleado
     if empleado_id:
         query += " AND empleado_id = ?"
         params.append(empleado_id)
