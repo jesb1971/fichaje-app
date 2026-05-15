@@ -109,11 +109,19 @@ def hora():
 def login_page():
     return FileResponse("templates/login.html")
 
-@app.get("/login")
-def login(usuario: str, password: str):
+from fastapi.responses import JSONResponse
+
+@app.post("/login")
+async def login(request: Request):
+    data = await request.json()
+
+    usuario = data.get("usuario")
+    password = data.get("password")
+
     if usuario == USUARIO and password == PASSWORD:
         return {"ok": True, "token": TOKEN}
-    return {"ok": False}
+
+    return JSONResponse(content={"ok": False}, status_code=401)
 
 @app.get("/app", response_class=HTMLResponse)
 def app_web():
@@ -291,8 +299,8 @@ database.crear_tabla()
 database.crear_tabla_alertas()
 
 # 🔐 CONFIG
-USUARIO = "admin"
-PASSWORD = "1234"
+USUARIO = "rrhh"
+PASSWORD = "Ic@dePro#2026RRHH"
 TOKEN = "seguro123"
 
 # 🏢 EMPLEADOS
