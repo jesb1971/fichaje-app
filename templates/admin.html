@@ -75,14 +75,28 @@ tr:nth-child(even) {
 
 </head>
 
-<body>
+<body style="margin:0;font-family:Arial,sans-serif;background:#f4f6f8;">
 
-<h1>Registro de Jornada de los Trabajadores</h1>
+<div style="display:flex;justify-content:center;align-items:flex-start;min-height:100vh;padding-top:40px;">
 
-<div class="filtros">
+<div style="width:95%;max-width:1200px;background:white;border-radius:10px;padding:25px;box-shadow:0 5px 20px rgba(0,0,0,0.1);">
+
+<!-- HEADER -->
+<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;">
+
+    <h1 style="margin:0;">Registro de Jornada de los Trabajadores</h1>
+
+    <button onclick="cerrarSesion()" 
+        style="background:#e74c3c;color:white;border:none;padding:8px 12px;border-radius:5px;cursor:pointer;">
+        Cerrar sesión
+    </button>
+
+</div>
+
+<div class="filtros" style="display:flex;gap:10px;flex-wrap:wrap;justify-content:center;margin-bottom:15px;">
 
     <input type="date" id="fechaInicio">
-	<input type="date" id="fechaFin">
+    <input type="date" id="fechaFin">
 
     <select id="filtroEmpleado">
         <option value="">Todos los empleados</option>
@@ -97,16 +111,15 @@ tr:nth-child(even) {
     </select>
 
     <button onclick="filtrar()">Filtrar</button>
-
-    <!-- 🔥 CAMBIO AQUÍ -->
     <button onclick="descargarExcel()">Descargar Excel</button>
-
     <button onclick="window.print()">Descargar PDF</button>
 
 </div>
 
-<table>
-    <thead>
+<div style="overflow-x:auto;">
+<table style="width:100%;border-collapse:collapse;">
+
+    <thead style="background:#333;color:white;">
         <tr>
             <th>Empleado</th>
             <th>Empresa</th>
@@ -118,206 +131,20 @@ tr:nth-child(even) {
             <th>IP</th>
         </tr>
     </thead>
+
     <tbody id="tabla"></tbody>
+
 </table>
+</div>
+
+</div>
+</div>
 
 <script>
 
-const nombres = {
-    "pilar_ganuza": "Pilar Ganuza",
-    "begona_bonis": "Begoña de Bonis",
-    "maria_eugenia_lopez": "Mª Eugenia López Baez",
-    "luichy_jorge": "María Luisa Jorge Cabrera",
-    "jose_sanchez": "José Sánchez",
-    "javier_alfonso": "Javier Alfonso",
-    "eduardo_rivero": "Eduardo Rivero",
-    "nazaret_ramos": "Nazaret Ramos",
-    "asuncion_olivares": "Asunción Olivares",
-    "carla_martin": "Carla Martín",
-    "cristo_diaz": "Cristo Díaz Miranda",
-    "laura_perez": "Laura Pérez Gómez",
-    "marta_cano": "Marta Cano Oliva",
-    "soledad_fernandez": "Soledad Fernández",
-    "candelaria_rodriguez": "Candelaria Rodríguez",
-    "natalia_diaz": "Natalia Díaz",
-    "sonia_gomez": "Sonia Esther Gómez Díaz",
-    "andres_caceres": "Andrés del Rosario Lorenzo Cáceres Mascareño",
-    "arsenio_cabrera": "Arsenio Angel Angel Cabrera",
-    "maria_moure": "Mª Nieves Moure Naveiro"
-};
-
-let datosGlobales = [];
-
-function cargarDatos() {
-    fetch("/ver_fichajes")
-    .then(res => {
-        if (!res.ok) {
-            throw new Error("Endpoint no responde");
-        }
-        return res.json();
-    })
-    .then(data => {
-        if (!data.fichajes) {
-            console.error("No vienen fichajes:", data);
-            return;
-        }
-
-        datosGlobales = data.fichajes;
-        cargarSelect();
-        pintarTabla(datosGlobales);
-    })
-    .catch(err => {
-        console.error("Error cargando datos:", err);
-        alert("Error cargando datos del servidor");
-    });
+function cerrarSesion() {
+    window.location.href = "/login_page";
 }
-
-function cargarSelect() {
-    let select = document.getElementById("filtroEmpleado");
-
-    select.innerHTML = '<option value="">Todos los empleados</option>';
-
-    Object.entries(nombres).forEach(([id, nombre]) => {
-        let option = `<option value="${id}">${nombre}</option>`;
-        select.innerHTML += option;
-    });
-}
-
-function calcularHoras(entrada, salida) {
-    if (!entrada || !salida) return "-";
-
-    let e = entrada.split(":");
-    let s = salida.split(":");
-
-    let inicio = new Date(0,0,0,e[0],e[1],e[2]);
-    let fin = new Date(0,0,0,s[0],s[1],s[2]);
-
-    let diff = (fin - inicio) / 1000;
-
-    let horas = Math.floor(diff / 3600);
-    let minutos = Math.floor((diff % 3600) / 60);
-
-    return `${horas}h ${minutos}m`;
-}
-
-function obtenerClaseEmpresa(empresa) {
-    if (empresa === "ICADEPRO") return "ICADEPRO";
-    if (empresa === "Proyectos Empresariales Canarios") return "PROYECTOS";
-    if (empresa === "PROICAFOR") return "PROICAFOR";
-    if (empresa === "GRUPO ICADEPRO") return "GRUPO";
-    return "";
-}
-
-function pintarTabla(datos) {
-
-    let tabla = document.getElementById("tabla");
-    tabla.innerHTML = "";
-
-    datos.forEach(f => {
-
-        let nombre = nombres[f.empleado] || f.nombre;
-        let horas = calcularHoras(f.entrada, f.salida);
-        let clase = obtenerClaseEmpresa(f.empresa);
-
-        let tipoVisual = f.tipo === "remoto"
-            ? '<span style="color:red;font-weight:bold;">REMOTO</span>'
-            : '<span style="color:green;font-weight:bold;">PRESENCIAL</span>';
-
-        let fila = `
-            <tr class="${clase}">
-                <td>${nombre}</td>
-                <td>${f.empresa || "-"}</td>
-                <td>${f.fecha}</td>
-                <td>${f.entrada || "-"}</td>
-                <td>${f.salida || "-"}</td>
-                <td>${horas}</td>
-                <td>${tipoVisual}</td>
-                <td>${f.ip || "-"}</td>
-            </tr>
-        `;
-
-        tabla.innerHTML += fila;
-    });
-}
-
-function filtrar() {
-
-    let fechaInicio = document.getElementById("fechaInicio").value;
-    let fechaFin = document.getElementById("fechaFin").value;
-    let empleado = document.getElementById("filtroEmpleado").value;
-    let empresa = document.getElementById("filtroEmpresa").value;
-
-    let filtrados = datosGlobales.filter(f => {
-
-        let okFecha = true;
-
-        if (fechaInicio && fechaFin) {
-            okFecha = f.fecha >= fechaInicio && f.fecha <= fechaFin;
-        } else if (fechaInicio) {
-            okFecha = f.fecha >= fechaInicio;
-        } else if (fechaFin) {
-            okFecha = f.fecha <= fechaFin;
-        }
-
-        let okEmpleado = !empleado || f.empleado === empleado;
-        let okEmpresa = !empresa || f.empresa === empresa;
-
-        return okFecha && okEmpleado && okEmpresa;
-    });
-
-    pintarTabla(filtrados);
-}
-
-/* 🔥 NUEVO */
-function descargarExcel() {
-
-    let fechaInicio = document.getElementById("fechaInicio").value;
-    let fechaFin = document.getElementById("fechaFin").value;
-    let empleado = document.getElementById("filtroEmpleado").value;
-
-    let url = "/exportar_excel?";
-
-    if (fechaInicio && fechaFin) {
-        url += `fecha_inicio=${fechaInicio}&fecha_fin=${fechaFin}&`;
-    } else if (fechaInicio) {
-        url += `fecha_inicio=${fechaInicio}&fecha_fin=${fechaInicio}&`;
-    } else if (fechaFin) {
-        url += `fecha_inicio=${fechaFin}&fecha_fin=${fechaFin}&`;
-    }
-
-    if (empleado) {
-        url += `empleado_id=${empleado}&`;
-    }
-
-    window.open(url, "_blank");
-}
-
-function descargarPDF() {
-
-    let fecha = document.getElementById("filtroFecha").value;
-    let empleado = document.getElementById("filtroEmpleado").value;
-    let empresa = document.getElementById("filtroEmpresa").value;
-
-    let url = "/exportar_pdf?";
-
-    if (fecha) {
-        url += `fecha_inicio=${fecha}&fecha_fin=${fecha}&`;
-    }
-
-    if (empleado) {
-        url += `empleado_id=${empleado}&`;
-    }
-
-    if (empresa) {
-        url += `empresa=${encodeURIComponent(empresa)}&`;
-    }
-
-    window.open(url, "_blank");
-}
-
-cargarDatos();
 
 </script>
-
-</body>
 </html>
