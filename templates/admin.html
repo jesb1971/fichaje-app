@@ -220,16 +220,16 @@ function cargarDatos() {
 }
 
 // 🎯 Llenar select empleados
-function cargarSelect() {
-    const select = document.getElementById("filtroEmpleado");
-    select.innerHTML = '<option value="">Todos los empleados</option>';
+	function cargarSelect() {
+		const select = document.getElementById("filtroEmpleado");
+		select.innerHTML = '<option value="">Todos los empleados</option>';
 
-    const nombres = [...new Set(datosGlobales.map(d => d.nombre))];
+		const empleados = [...new Map(datosGlobales.map(d => [d.empleado, d])).values()];
 
-    nombres.forEach(nombre => {
+    empleados.forEach(e => {
         const option = document.createElement("option");
-        option.value = nombre;
-        option.textContent = nombre;
+        option.value = e.empleado;     // 🔥 ID real
+        option.textContent = e.nombre; // 👀 lo que ve el usuario
         select.appendChild(option);
     });
 }
