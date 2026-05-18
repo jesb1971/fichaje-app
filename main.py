@@ -202,7 +202,7 @@ def exportar_excel():
     conn = database.conectar()
     cursor = conn.cursor()
 
-    cursor.execute("SELECT empleado_id,fecha,hora_entrada,hora_salida,tipo,empresa FROM fichajes")
+    cursor.execute("SELECT empleado_id,fecha,hora_entrada,hora_salida,tipo,empresa FROM fichajes WHERE fecha BETWEEN ? AND ?", (fecha_inicio, fecha_fin))
     datos = cursor.fetchall()
     conn.close()
 
