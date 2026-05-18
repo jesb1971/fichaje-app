@@ -118,6 +118,7 @@ def app_web():
 def fichar(request: Request, empleado_id: str, pin: str):
 
     ip = request.headers.get("x-forwarded-for", request.client.host)
+    ip = ip.split(",")[0].strip()
 
     if PINS.get(empleado_id) != pin:
         guardar_alerta(empleado_id, "PIN_INCORRECTO", "Intento fallido", ip)
