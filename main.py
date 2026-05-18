@@ -212,8 +212,8 @@ params = []
 
 # 🔹 Filtro por empleado
     if empleado_id:
-    query += " AND empleado_id IN (SELECT empleado_id FROM fichajes WHERE empleado_id = ? OR empleado_id IN (SELECT ?))"
-    params.append(empleado_id)
+        query += " AND empleado_id IN (SELECT empleado_id FROM fichajes WHERE empleado_id = ? OR empleado_id IN (SELECT ?))"
+        params.append(empleado_id)
 
 # 🔹 Filtro por empresa
     if empresa:
