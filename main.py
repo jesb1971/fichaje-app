@@ -203,7 +203,7 @@ def exportar_excel(fecha_inicio: str = None, fecha_fin: str = None):
     cursor = conn.cursor()
 
     if fecha_inicio and fecha_fin:
-    cursor.execute(
+        cursor.execute(
         "SELECT empleado_id,fecha,hora_entrada,hora_salida,tipo,empresa FROM fichajes WHERE fecha BETWEEN ? AND ?",
         (fecha_inicio, fecha_fin)
     )
