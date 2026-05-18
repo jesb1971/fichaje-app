@@ -5,72 +5,76 @@
 <title>Panel Admin</title>
 
 <style>
+
+* {
+    box-sizing: border-box;
+}
+
 body {
-    font-family: Arial;
-    background: #f4f4f4;
-    padding: 20px;
+    margin: 0;
+    font-family: Arial, sans-serif;
+    background: #f4f6f8;
 }
 
-h1 {
-    text-align: center;
-}
-
-/* filtros */
-.filtros {
-    margin-bottom: 20px;
+/* contenedor centrado */
+.contenedor {
     display: flex;
-    gap: 10px;
-    flex-wrap: wrap;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
 }
 
-input, select {
-    padding: 8px;
-}
-
-button {
-    padding: 8px 12px;
-    cursor: pointer;
-}
-
-/* tabla */
-table {
+/* tarjeta */
+.card {
     width: 100%;
-    border-collapse: collapse;
+    max-width: 400px;
     background: white;
-}
-
-th, td {
-    padding: 10px;
-    border: 1px solid #ddd;
+    border-radius: 12px;
+    padding: 30px;
+    box-shadow: 0 8px 25px rgba(0,0,0,0.1);
     text-align: center;
 }
 
-th {
-    background: #333;
+/* logo */
+.logo {
+    width: 120px;
+    margin-bottom: 15px;
+}
+
+/* título */
+h1 {
+    font-size: 20px;
+    margin-bottom: 20px;
+    color: #555;
+}
+
+/* inputs */
+input {
+    width: 100%;
+    padding: 12px;
+    margin-bottom: 12px;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    font-size: 14px;
+}
+
+/* botón */
+button {
+    width: 100%;
+    padding: 14px;
+    background: #ff6a00;
     color: white;
+    border: none;
+    border-radius: 6px;
+    font-size: 16px;
+    cursor: pointer;
+    transition: 0.3s;
 }
 
-tr:nth-child(even) {
-    background: #f9f9f9;
+button:hover {
+    background: #e65c00;
 }
 
-/* colores por empresa */
-.ICADEPRO { background: #cfe2ff !important; }
-.PROYECTOS { background: #d1e7dd !important; }
-.PROICAFOR { background: #e2d9f3 !important; }
-.GRUPO { background: #ffe5b4 !important; }
-
-/* PDF */
-@media print {
-    .filtros, button, input, select {
-        display: none !important;
-    }
-
-    th {
-        background: #000 !important;
-        color: white !important;
-    }
-}
 </style>
 
 </head>
