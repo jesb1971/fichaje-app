@@ -197,20 +197,30 @@ def ver_fichajes():
 
 # ✅ EXPORTAR EXCEL (ARREGLADO)
 @app.get("/exportar_excel")
-def exportar_excel(fecha_inicio: str = None, fecha_fin: str = None):
+def exportar_excel(fecha_inicio: str = None, fecha_fin: str = None, empleado_id: str = None, empresa: str = None):
 
     conn = database.conectar()
     cursor = conn.cursor()
 
+    query = "SELECT empleado_id,fecha,hora_entrada,hora_salida,tipo,empresa FROM fichajes WHERE 1=1"
+params = []
+
+# 🔹 Filtro por fechas (lo que ya te funciona)
     if fecha_inicio and fecha_fin:
-        cursor.execute(
-        "SELECT empleado_id,fecha,hora_entrada,hora_salida,tipo,empresa FROM fichajes WHERE fecha BETWEEN ? AND ?",
-        (fecha_inicio, fecha_fin)
-    )
-    else:
-        cursor.execute(
-        "SELECT empleado_id,fecha,hora_entrada,hora_salida,tipo,empresa FROM fichajes"
-    )
+        query += " AND fecha BETWEEN ? AND ?"
+        params.extend([fecha_inicio, fecha_fin])
+
+# 🔹 Filtro por empleado
+    if empleado_id:
+        query += " AND empleado_id = ?"
+        params.append(empleado_id)
+
+# 🔹 Filtro por empresa
+    if empresa:
+        query += " AND empresa = ?"
+        params.append(empresa)
+
+    cursor.execute(query, params)
     datos = cursor.fetchall()
     conn.close()
 
