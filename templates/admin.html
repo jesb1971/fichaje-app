@@ -306,7 +306,16 @@ function filtrar() {
 
 // 📥 Excel
 function descargarExcel() {
-    window.location.href = "/exportar_excel";
+
+    const inicio = document.getElementById("fechaInicio").value;
+    const fin = document.getElementById("fechaFin").value;
+
+    let url = "/exportar_excel?";
+
+    if (inicio) url += "fecha_inicio=" + inicio + "&";
+    if (fin) url += "fecha_fin=" + fin + "&";
+
+    window.location.href = url;
 }
 
 // 🚀 IMPORTANTE (ESTO ES LO QUE TE FALTABA)
