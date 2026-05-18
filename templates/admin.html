@@ -221,15 +221,15 @@ function cargarDatos() {
 
 // 🎯 Llenar select empleados
 	function cargarSelect() {
-		const select = document.getElementById("filtroEmpleado");
-		select.innerHTML = '<option value="">Todos los empleados</option>';
+    const select = document.getElementById("filtroEmpleado");
+    select.innerHTML = '<option value="">Todos los empleados</option>';
 
-		const empleados = [...new Map(datosGlobales.map(d => [d.empleado, d])).values()];
+    const nombres = [...new Set(datosGlobales.map(d => d.nombre))];
 
-    empleados.forEach(e => {
+    nombres.forEach(nombre => {
         const option = document.createElement("option");
-        option.value = e.empleado;     // 🔥 ID real
-        option.textContent = e.nombre; // 👀 lo que ve el usuario
+        option.value = nombre;
+        option.textContent = nombre;
         select.appendChild(option);
     });
 }

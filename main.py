@@ -203,19 +203,19 @@ def exportar_excel(fecha_inicio: str = None, fecha_fin: str = None, empleado_id:
     cursor = conn.cursor()
 
     query = "SELECT empleado_id,fecha,hora_entrada,hora_salida,tipo,empresa FROM fichajes WHERE 1=1"
-    params = []
+params = []
 
-    # 🔹 Filtro por fechas
+# 🔹 Filtro por fechas (lo que ya te funciona)
     if fecha_inicio and fecha_fin:
         query += " AND fecha BETWEEN ? AND ?"
         params.extend([fecha_inicio, fecha_fin])
 
-    # 🔹 Filtro por empleado
+# 🔹 Filtro por empleado
     if empleado_id:
-        query += " AND empleado_id = ?"
-        params.append(empleado_id)
+    query += " AND empleado_id IN (SELECT empleado_id FROM fichajes WHERE empleado_id = ? OR empleado_id IN (SELECT ?))"
+    params.append(empleado_id)
 
-    # 🔹 Filtro por empresa
+# 🔹 Filtro por empresa
     if empresa:
         query += " AND empresa = ?"
         params.append(empresa)
