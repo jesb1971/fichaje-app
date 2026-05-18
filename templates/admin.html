@@ -142,9 +142,123 @@ tr:nth-child(even) {
 
 <script>
 
+let datosGlobales = [];
+
+// 🔐 Cerrar sesión
 function cerrarSesion() {
     window.location.href = "/login_page";
 }
+
+// 🚀 Cargar datos desde backend
+function cargarDatos() {
+    fetch("/ver_fichajes")
+    .then(res => res.json())
+    .then(data => {
+        datosGlobales = data.fichajes;
+        cargarSelect();
+        pintarTabla(datosGlobales);
+    })
+    .catch(error => {
+        console.error("Error cargando datos:", error);
+    });
+}
+
+// 🎯 Llenar select empleados
+function cargarSelect() {
+    const select = document.getElementById("filtroEmpleado");
+    select.innerHTML = '<option value="">Todos los empleados</option>';
+
+    const nombres = [...new Set(datosGlobales.map(d => d.nombre))];
+
+    nombres.forEach(nombre => {
+        const option = document.createElement("option");
+        option.value = nombre;
+        option.textContent = nombre;
+        select.appendChild(option);
+    });
+}
+
+// 🧾 Pintar tabla
+function pintarTabla(datos) {
+    const tabla = document.getElementById("tabla");
+    tabla.innerHTML = "";
+
+    datos.forEach(f => {
+
+        let clase = "";
+        if (f.empresa.includes("ICADEPRO")) clase = "ICADEPRO";
+        if (f.empresa.includes("Proyectos")) clase = "PROYECTOS";
+        if (f.empresa.includes("PROICAFOR")) clase = "PROICAFOR";
+        if (f.empresa.includes("GRUPO")) clase = "GRUPO";
+
+        let horas = "-";
+        if (f.entrada && f.salida) {
+            const h1 = new Date(`1970-01-01T${f.entrada}`);
+            const h2 = new Date(`1970-01-01T${f.salida}`);
+            const diff = (h2 - h1) / 1000;
+
+            const h = Math.floor(diff / 3600);
+            const m = Math.floor((diff % 3600) / 60);
+
+            horas = `${h}h ${m}m`;
+        }
+
+        tabla.innerHTML += `
+            <tr class="${clase}">
+                <td>${f.nombre}</td>
+                <td>${f.empresa}</td>
+                <td>${f.fecha}</td>
+                <td>${f.entrada || "-"}</td>
+                <td>${f.salida || "-"}</td>
+                <td>${horas}</td>
+                <td style="color:${f.tipo === "remoto" ? "red" : "green"};font-weight:bold;">
+                    ${f.tipo.toUpperCase()}
+                </td>
+                <td>${f.ip}</td>
+            </tr>
+        `;
+    });
+}
+
+// 🔎 Filtrar
+function filtrar() {
+    const inicio = document.getElementById("fechaInicio").value;
+    const fin = document.getElementById("fechaFin").value;
+    const empleado = document.getElementById("filtroEmpleado").value;
+    const empresa = document.getElementById("filtroEmpresa").value;
+
+    let filtrados = datosGlobales;
+
+    if (inicio) {
+        filtrados = filtrados.filter(f => f.fecha >= inicio);
+    }
+
+    if (fin) {
+        filtrados = filtrados.filter(f => f.fecha <= fin);
+    }
+
+    if (empleado) {
+        filtrados = filtrados.filter(f => f.nombre === empleado);
+    }
+
+    if (empresa) {
+        filtrados = filtrados.filter(f => f.empresa === empresa);
+    }
+
+    pintarTabla(filtrados);
+}
+
+// 📥 Excel
+function descargarExcel() {
+    window.location.href = "/exportar_excel";
+}
+
+// 🚀 IMPORTANTE (ESTO ES LO QUE TE FALTABA)
+document.addEventListener("DOMContentLoaded", function() {
+    cargarDatos();
+});
+
+</script>
 
 </script>
 </html>
