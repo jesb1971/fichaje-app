@@ -309,11 +309,24 @@ function descargarExcel() {
 
     const inicio = document.getElementById("fechaInicio").value;
     const fin = document.getElementById("fechaFin").value;
+    const nombreSeleccionado = document.getElementById("filtroEmpleado").value;
+    const empresa = document.getElementById("filtroEmpresa").value;
+
+    // 🔥 convertir nombre → empleado_id
+    let empleado_id = "";
+    if (nombreSeleccionado) {
+        const encontrado = datosGlobales.find(d => d.nombre === nombreSeleccionado);
+        if (encontrado) {
+            empleado_id = encontrado.empleado;
+        }
+    }
 
     let url = "/exportar_excel?";
 
     if (inicio) url += "fecha_inicio=" + inicio + "&";
     if (fin) url += "fecha_fin=" + fin + "&";
+    if (empleado_id) url += "empleado_id=" + empleado_id + "&";
+    if (empresa) url += "empresa=" + empresa + "&";
 
     window.location.href = url;
 }
