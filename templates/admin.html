@@ -150,11 +150,25 @@ let datosGlobales = [];
 
 function cargarDatos() {
     fetch("/ver_fichajes")
-    .then(res => res.json())
+    .then(res => {
+        if (!res.ok) {
+            throw new Error("Endpoint no responde");
+        }
+        return res.json();
+    })
     .then(data => {
+        if (!data.fichajes) {
+            console.error("No vienen fichajes:", data);
+            return;
+        }
+
         datosGlobales = data.fichajes;
         cargarSelect();
         pintarTabla(datosGlobales);
+    })
+    .catch(err => {
+        console.error("Error cargando datos:", err);
+        alert("Error cargando datos del servidor");
     });
 }
 
