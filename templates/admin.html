@@ -172,6 +172,8 @@ tr:nth-child(even) {
 
 </div>
 
+<div id="totalHoras" style="margin:10px 0;font-weight:bold;text-align:right;"></div>
+
 <div style="overflow-x:auto;">
 <table style="width:100%;border-collapse:collapse;">
 
@@ -213,6 +215,7 @@ function cargarDatos() {
         datosGlobales = data.fichajes;
         cargarSelect();
         pintarTabla(datosGlobales);
+		calcularTotalHoras(datosGlobales);
     })
     .catch(error => {
         console.error("Error cargando datos:", error);
@@ -276,6 +279,30 @@ function pintarTabla(datos) {
     });
 }
 
+function calcularTotalHoras(datos) {
+
+    let totalMinutos = 0;
+
+    datos.forEach(f => {
+        if (f.entrada && f.salida) {
+
+            const [h1, m1] = f.entrada.split(":").map(Number);
+            const [h2, m2] = f.salida.split(":").map(Number);
+
+            const inicio = h1 * 60 + m1;
+            const fin = h2 * 60 + m2;
+
+            totalMinutos += (fin - inicio);
+        }
+    });
+
+    const horas = Math.floor(totalMinutos / 60);
+    const minutos = totalMinutos % 60;
+
+    document.getElementById("totalHoras").innerText =
+        "Total horas: " + horas + "h " + minutos + "m";
+}
+
 // 🔎 Filtrar
 function filtrar() {
     const inicio = document.getElementById("fechaInicio").value;
@@ -302,6 +329,7 @@ function filtrar() {
     }
 
     pintarTabla(filtrados);
+	calcularTotalHoras(filtrados);
 }
 
 // 📥 Excel
