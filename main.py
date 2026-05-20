@@ -257,6 +257,8 @@ def exportar_excel(fecha_inicio: str = None, fecha_fin: str = None, empleado_id:
     ws = wb.active
 
     ws.append(["Empleado","Empresa","Fecha","Entrada","Salida","Horas","Tipo"])
+    
+    total_minutos = 0
 
     for fila in datos:
         empleado, fecha, entrada, salida, tipo, empresa = fila
@@ -267,9 +269,17 @@ def exportar_excel(fecha_inicio: str = None, fecha_fin: str = None, empleado_id:
             h2 = datetime.strptime(salida,"%H:%M:%S")
             diff = h2-h1
             horas = f"{diff.seconds//3600}h {(diff.seconds%3600)//60}m"
+            total_minutos += diff.seconds // 60
 
         nombre = EMPLEADOS.get(empleado,{}).get("nombre",empleado)
         ws.append([nombre,empresa,fecha,entrada,salida,horas,tipo])
+        
+    horas_total = total_minutos // 60
+    minutos_total = total_minutos % 60
+
+    ws.append([])  # línea en blanco
+
+    ws.append(["", "", "", "", "TOTAL", f"{horas_total}h {minutos_total}m"])
 
     ruta="/var/data/fichajes.xlsx"
     wb.save(ruta)
