@@ -114,7 +114,7 @@ if (empleadoQR) {
 }
 
 // 🔥 FICHAR
-function fichar() {
+async function fichar() {
     let empleado = document.getElementById("empleado").value;
     let pin = document.getElementById("pin").value;
     let resultado = document.getElementById("resultado");
@@ -125,6 +125,18 @@ function fichar() {
     }
 
     resultado.innerHTML = "";
+
+	// 🔥 CONSULTAR ESTADO
+	const resEstado = await fetch(`/estado?empleado_id=${empleado}`);
+	const dataEstado = await resEstado.json();
+
+	// ⚠️ SI YA FICHÓ ENTRADA → CONFIRMAR SALIDA
+	if (dataEstado.estado === "entrada_hecha") {
+		const confirmar = confirm("Ya tienes una entrada registrada. ¿Seguro que deseas registrar la salida?");
+		if (!confirmar) {
+			return;
+		}
+	}
 
     fetch(`/fichar?empleado_id=${empleado}&pin=${pin}`)
     .then(res => res.json().then(data => ({ ok: res.ok, data })))
