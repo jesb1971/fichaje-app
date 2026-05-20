@@ -130,7 +130,13 @@ async function fichar() {
 	const resEstado = await fetch(`/estado?empleado_id=${empleado}`);
 	const dataEstado = await resEstado.json();
 
-	// ⚠️ SI YA FICHÓ ENTRADA → CONFIRMAR SALIDA
+	// ❌ YA COMPLETO → BLOQUEAR
+	if (dataEstado.estado === "completo") {
+		alert("Ya has fichado entrada y salida hoy");
+		return;
+	}
+
+	// ⚠️ YA TIENE ENTRADA → CONFIRMAR SALIDA
 	if (dataEstado.estado === "entrada_hecha") {
 		const confirmar = confirm("Ya tienes una entrada registrada. ¿Seguro que deseas registrar la salida?");
 		if (!confirmar) {
