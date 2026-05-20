@@ -194,6 +194,35 @@ def ver_fichajes():
         })
 
     return {"fichajes": resultado}
+    
+@app.get("/estado")
+def estado(empleado_id: str):
+
+    conn = database.conectar()
+    cursor = conn.cursor()
+
+    hoy = datetime.now(ZoneInfo("Atlantic/Canary")).strftime("%Y-%m-%d")
+
+    cursor.execute(
+        "SELECT hora_entrada, hora_salida FROM fichajes WHERE empleado_id=? AND fecha=?",
+        (empleado_id, hoy)
+    )
+
+    registro = cursor.fetchone()
+    conn.close()
+
+    if registro is None:
+        return {"estado": "sin_fichar"}
+
+    entrada, salida = registro
+
+    if entrada and not salida:
+        return {"estado": "entrada_hecha"}
+
+    if entrada and salida:
+        return {"estado": "completo"}
+
+    return {"estado": "sin_fichar"}   
 
 # ✅ EXPORTAR EXCEL (ARREGLADO)
 @app.get("/exportar_excel")
