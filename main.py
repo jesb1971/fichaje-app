@@ -45,6 +45,7 @@ EMPLEADOS = {
     "andres_caceres": {"nombre": "Andrés del Rosario Lorenzo Cáceres Mascareño", "empresa": "GRUPO ICADEPRO", "tipo_acceso": "oficina"},
     "arsenio_cabrera": {"nombre": "Arsenio Ángel Cabrera", "empresa": "GRUPO ICADEPRO", "tipo_acceso": "oficina"},
     "maria_moure": {"nombre": "María Nieves Moure Naveiro", "empresa": "GRUPO ICADEPRO", "tipo_acceso": "oficina"},
+    "francisco_padilla": {"nombre": "Francisco Javier Padilla González", "empresa": "GRUPO ICADEPRO", "tipo_acceso": "oficina"}
 }
 
 # 🔐 PINES
@@ -68,7 +69,8 @@ PINS = {
     "sonia_gomez": "6805",
     "andres_caceres": "6771",
     "arsenio_cabrera": "4389",
-    "maria_moure": "1118"
+    "maria_moure": "1118",
+    "francisco_padilla": "1839"
 }
 
 # 🔴 ALERTAS
