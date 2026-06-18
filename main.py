@@ -182,9 +182,15 @@ def ver_fichajes():
     for fila in datos:
         emp_id = fila[1]
 
-        nombre = EMPLEADOS.get(emp_id, {}).get("nombre", emp_id)
-        empresa = EMPLEADOS.get(emp_id, {}).get("empresa", "Sin empresa")
-
+        empleado_data = EMPLEADOS.get(emp_id)
+        
+        if empleado_data:
+            nombre = empleado_data.get("nombre", emp_id)
+            empresa = empleado_data.get("empresa", "Sin empresa")
+        else:
+            nombre = emp_id
+            empresa = "Sin empresa"
+        
         resultado.append({
             "id": fila[0],
             "empleado": emp_id,
