@@ -185,6 +185,7 @@ tr:nth-child(even) {
             <th>Entrada</th>
             <th>Salida</th>
 			<th>Pausa</th>
+			<th>Motivo</th>
             <th>Horas</th>
             <th>Tipo</th>
             <th>IP</th>
@@ -275,6 +276,7 @@ function pintarTabla(datos) {
 					? calcularPausa(f.pausa_inicio, f.pausa_fin)
 					 : "-"
 				}</td>
+				<td>${f.motivo_pausa || "-"}</td>
                 <td>${horas}</td>
                 <td style="color:${f.tipo === "remoto" ? "red" : "green"};font-weight:bold;">
                     ${f.tipo.toUpperCase()}

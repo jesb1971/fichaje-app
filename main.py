@@ -181,7 +181,7 @@ def ver_fichajes():
     cursor = conn.cursor()
 
     cursor.execute("""
-        SELECT id, empleado_id, fecha, hora_entrada, hora_salida, tipo, empresa, ip, hora_pausa_inicio, hora_pausa_fin
+        SELECT id, empleado_id, fecha, hora_entrada, hora_salida, tipo, empresa, ip, hora_pausa_inicio, hora_pausa_fin, motivo_pausa
         FROM fichajes
         ORDER BY fecha DESC, hora_entrada DESC
     """)
@@ -215,6 +215,7 @@ def ver_fichajes():
             "ip": fila[7] if len(fila) > 7 else "-",
             "pausa_inicio": fila[8] if len(fila) > 8 else None,
             "pausa_fin": fila[9] if len(fila) > 9 else None
+            "motivo_pausa": fila[10] if len(fila) > 10 else "-"
         })
 
     return {"fichajes": resultado}
