@@ -184,6 +184,7 @@ tr:nth-child(even) {
             <th>Fecha</th>
             <th>Entrada</th>
             <th>Salida</th>
+			<th>Pausa</th>
             <th>Horas</th>
             <th>Tipo</th>
             <th>IP</th>
@@ -269,6 +270,11 @@ function pintarTabla(datos) {
                 <td>${f.fecha}</td>
                 <td>${f.entrada || "-"}</td>
                 <td>${f.salida || "-"}</td>
+				<td>${
+					f.pausa_inicio && f.pausa_fin
+					? calcularPausa(f.pausa_inicio, f.pausa_fin)
+					 : "-"
+				}</td>
                 <td>${horas}</td>
                 <td style="color:${f.tipo === "remoto" ? "red" : "green"};font-weight:bold;">
                     ${f.tipo.toUpperCase()}
@@ -277,6 +283,18 @@ function pintarTabla(datos) {
             </tr>
         `;
     });
+}
+
+function calcularPausa(inicio, fin) {
+    const [h1, m1] = inicio.split(":").map(Number);
+    const [h2, m2] = fin.split(":").map(Number);
+
+    const minutos = (h2 * 60 + m2) - (h1 * 60 + m1);
+
+    const horas = Math.floor(minutos / 60);
+    const mins = minutos % 60;
+
+    return `${horas}h ${mins}m`;
 }
 
 function calcularTotalHoras(datos) {

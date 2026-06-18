@@ -169,7 +169,7 @@ def ver_fichajes():
     cursor = conn.cursor()
 
     cursor.execute("""
-        SELECT id, empleado_id, fecha, hora_entrada, hora_salida, tipo, empresa, ip
+        SELECT id, empleado_id, fecha, hora_entrada, hora_salida, tipo, empresa, ip, hora_pausa_inicio, hora_pausa_fin
         FROM fichajes
         ORDER BY fecha DESC, hora_entrada DESC
     """)
@@ -194,7 +194,9 @@ def ver_fichajes():
             "entrada": fila[3],
             "salida": fila[4],
             "tipo": fila[5],
-            "ip": fila[7] if len(fila) > 7 else "-"
+            "ip": fila[7] if len(fila) > 7 else "-",
+            "pausa_inicio": fila[8] if len(fila) > 8 else None,
+            "pausa_fin": fila[9] if len(fila) > 9 else None
         })
 
     return {"fichajes": resultado}
@@ -235,7 +237,7 @@ def exportar_excel(fecha_inicio: str = None, fecha_fin: str = None, empleado_id:
     conn = database.conectar()
     cursor = conn.cursor()
 
-    query = "SELECT empleado_id,fecha,hora_entrada,hora_salida,tipo,empresa FROM fichajes WHERE 1=1"
+    query = "SELECT empleado_id,fecha,hora_entrada,hora_salida,tipo,empresa,hora_pausa_inicio,hora_pausa_fin FROM fichajes WHERE 1=1"
     params = []
 
     # 🔹 Filtro por fechas
@@ -260,30 +262,50 @@ def exportar_excel(fecha_inicio: str = None, fecha_fin: str = None, empleado_id:
     wb = openpyxl.Workbook()
     ws = wb.active
 
-    ws.append(["Empleado","Empresa","Fecha","Entrada","Salida","Horas","Tipo"])
+    ws.append(["Empleado","Empresa","Fecha","Entrada","Salida","Pausa no computable","Horas","Tipo"])
     
     total_minutos = 0
 
     for fila in datos:
         empleado, fecha, entrada, salida, tipo, empresa = fila
 
-        horas = ""
+        horas = "-"
         if entrada and salida:
             h1 = datetime.strptime(entrada,"%H:%M:%S")
             h2 = datetime.strptime(salida,"%H:%M:%S")
-            diff = h2-h1
-            horas = f"{diff.seconds//3600}h {(diff.seconds%3600)//60}m"
-            total_minutos += diff.seconds // 60
+            diff = h2 - h1
+
+            minutos_totales = diff.seconds // 60
+
+        # 🔹 DESCONTAR PAUSA SI EXISTE
+            if fila[6] and fila[7]:  # pausa_inicio y pausa_fin
+                p1 = datetime.strptime(fila[6], "%H:%M:%S")
+                p2 = datetime.strptime(fila[7], "%H:%M:%S")
+                pausa = p2 - p1
+                minutos_totales -= pausa.seconds // 60
+
+            horas = f"{minutos_totales//60}h {minutos_totales%60}m"
+            total_minutos += minutos_totales
 
         nombre = EMPLEADOS.get(empleado,{}).get("nombre",empleado)
-        ws.append([nombre,empresa,fecha,entrada,salida,horas,tipo])
+        
+        # 🔹 calcular pausa para Excel
+        pausa_texto = "-"
+        
+        if fila[6] and fila[7]:
+            p1 = datetime.strptime(fila[6], "%H:%M:%S")
+            p2 = datetime.strptime(fila[7], "%H:%M:%S")
+            minutos = (p2 - p1).seconds // 60
+            pausa_texto = f"{minutos//60}h {minutos%60}m"
+            
+        ws.append([nombre,empresa,fecha,entrada,salida,pausa_texto,horas,tipo])
         
     horas_total = total_minutos // 60
     minutos_total = total_minutos % 60
 
     ws.append([])  # línea en blanco
 
-    ws.append(["", "", "", "", "TOTAL", f"{horas_total}h {minutos_total}m"])
+    ws.append(["", "", "", "", "", "TOTAL", f"{horas_total}h {minutos_total}m", ""])
 
     ruta="/var/data/fichajes.xlsx"
     wb.save(ruta)
@@ -303,3 +325,50 @@ def panel_admin(token: str = None):
 
     with open(ruta, encoding="utf-8") as f:
         return HTMLResponse(content=f.read())
+        
+@app.get("/pausa")
+def pausa(empleado_id: str):
+
+    conn = database.conectar()
+    cursor = conn.cursor()
+
+    hoy = datetime.now(ZoneInfo("Atlantic/Canary")).strftime("%Y-%m-%d")
+    hora_actual = datetime.now(ZoneInfo("Atlantic/Canary")).strftime("%H:%M:%S")
+
+    cursor.execute(
+        "SELECT hora_entrada, hora_pausa_inicio, hora_pausa_fin FROM fichajes WHERE empleado_id=? AND fecha=?",
+        (empleado_id, hoy)
+    )
+
+    registro = cursor.fetchone()
+
+    # ❌ NO HA FICHADO ENTRADA
+    if not registro or not registro[0]:
+        conn.close()
+        return {"mensaje": "Primero debes fichar entrada", "hora": hora_actual}
+
+    entrada, pausa_inicio, pausa_fin = registro
+
+    # 🔹 INICIAR PAUSA
+    if pausa_inicio is None:
+        cursor.execute(
+            "UPDATE fichajes SET hora_pausa_inicio=? WHERE empleado_id=? AND fecha=?",
+            (hora_actual, empleado_id, hoy)
+        )
+        conn.commit()
+        conn.close()
+        return {"mensaje": "Pausa iniciada", "hora": hora_actual}
+
+    # 🔹 FINALIZAR PAUSA
+    if pausa_inicio and pausa_fin is None:
+        cursor.execute(
+            "UPDATE fichajes SET hora_pausa_fin=? WHERE empleado_id=? AND fecha=?",
+            (hora_actual, empleado_id, hoy)
+        )
+        conn.commit()
+        conn.close()
+        return {"mensaje": "Pausa finalizada", "hora": hora_actual}
+
+    # ❌ YA TIENE PAUSA COMPLETA
+    conn.close()
+    return {"mensaje": "Ya has registrado una pausa hoy", "hora": hora_actual}

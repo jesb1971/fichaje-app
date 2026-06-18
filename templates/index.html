@@ -92,7 +92,7 @@ button {
 <option value="arsenio_cabrera">Arsenio Angel Angel Cabrera</option>
 <option value="maria_moure">Mª Nieves Moure Naveiro</option>
 <option value="francisco_padilla">Francisco Javier Padilla González</option>
-<option value="santiago_gutierrez">Santiago Gutiérrez Fariña </option>
+<option value="santiago_gutierrez">Santiago Gutiérrez Fariña</option>
 
 </select>
 
@@ -101,6 +101,8 @@ button {
 <p id="accion"></p>
 
 <button id="botonFichar" onclick="fichar()">FICHAR</button>
+
+<button onclick="pausa()" style="margin-top:10px;">PAUSA</button>
 
 <div id="resultado"></div>
 
@@ -186,6 +188,21 @@ async function fichar() {
             <div style="background:#fff3cd;color:#856404;padding:15px;border-radius:8px;">
                 ${err.detail || "Error al fichar"}
             </div>`;
+    });
+}
+
+function pausa() {
+    const empleado = document.getElementById("empleado").value;
+
+    if (!empleado) {
+        alert("Selecciona tu nombre primero");
+        return;
+    }
+
+    fetch(`/pausa?empleado_id=${empleado}`)
+    .then(res => res.json())
+    .then(data => {
+        alert(data.mensaje + " - " + data.hora);
     });
 }
 
