@@ -72,7 +72,7 @@ PINS = {
     "arsenio_cabrera": "4389",
     "maria_moure": "1118",
     "francisco_padilla": "1839",
-    "santiago_gutierrez": "5535",
+    "santiago_gutierrez": "5535"
 }
 
 # 🔴 ALERTAS
@@ -303,4 +303,3 @@ def panel_admin(token: str = None):
 
     with open(ruta, encoding="utf-8") as f:
         return HTMLResponse(content=f.read())
-        
