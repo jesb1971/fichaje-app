@@ -303,3 +303,4 @@ def panel_admin(token: str = None):
 
     with open(ruta, encoding="utf-8") as f:
         return HTMLResponse(content=f.read())
+        
