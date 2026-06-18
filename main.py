@@ -377,8 +377,8 @@ def pausa(empleado_id: str, motivo: str = None):
     # 🔹 FINALIZAR PAUSA
     if pausa_inicio and pausa_fin is None:
         cursor.execute(
-            "UPDATE fichajes SET hora_pausa_fin=? WHERE empleado_id=? AND fecha=?",
-            (hora_actual, empleado_id, hoy)
+            "UPDATE fichajes SET hora_pausa_fin=?, motivo_pausa=? WHERE empleado_id=? AND fecha=?",
+            (hora_actual, motivo, empleado_id, hoy)
         )
         conn.commit()
         conn.close()
