@@ -10,6 +10,23 @@ import qrcode
 
 app = FastAPI()
 
+# 🔧 MIGRACIÓN BD (SOLO UNA VEZ)
+conn = database.conectar()
+cursor = conn.cursor()
+
+try:
+    cursor.execute("ALTER TABLE fichajes ADD COLUMN hora_pausa_inicio TEXT")
+except:
+    pass
+
+try:
+    cursor.execute("ALTER TABLE fichajes ADD COLUMN hora_pausa_fin TEXT")
+except:
+    pass
+
+conn.commit()
+conn.close()
+
 # 🔥 STATIC
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 app.mount("/static", StaticFiles(directory=os.path.join(BASE_DIR, "static")), name="static")
