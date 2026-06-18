@@ -102,6 +102,13 @@ button {
 
 <button id="botonFichar" onclick="fichar()">FICHAR</button>
 
+<select id="motivoPausa" style="margin-top:10px;">
+    <option value="">Selecciona motivo de pausa</option>
+    <option value="Trámites">Trámites</option>
+    <option value="Gestión médica">Gestión médica</option>
+    <option value="Otros">Otros</option>
+</select>
+
 <button onclick="pausa()" style="margin-top:10px;">PAUSA</button>
 
 <div id="resultado"></div>
@@ -193,11 +200,17 @@ async function fichar() {
 
 function pausa() {
     const empleado = document.getElementById("empleado").value;
+	const motivo = document.getElementById("motivoPausa").value;
 
     if (!empleado) {
         alert("Selecciona tu nombre primero");
         return;
     }
+	
+	if (!motivo) {
+		alert("Debes seleccionar un motivo de pausa");
+		return;
+	}
 
     fetch(`/pausa?empleado_id=${empleado}`)
     .then(res => res.json())

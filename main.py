@@ -10,6 +10,18 @@ import qrcode
 
 app = FastAPI()
 
+# 🔧 MIGRACIÓN BD (AÑADIR MOTIVO PAUSA)
+conn = database.conectar()
+cursor = conn.cursor()
+
+try:
+    cursor.execute("ALTER TABLE fichajes ADD COLUMN motivo_pausa TEXT")
+except:
+    pass
+
+conn.commit()
+conn.close()
+
 # 🔥 STATIC
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 app.mount("/static", StaticFiles(directory=os.path.join(BASE_DIR, "static")), name="static")
@@ -338,7 +350,7 @@ def panel_admin(token: str = None):
         return HTMLResponse(content=f.read())
         
 @app.get("/pausa")
-def pausa(empleado_id: str):
+def pausa(empleado_id: str, motivo: str = None):
 
     conn = database.conectar()
     cursor = conn.cursor()
@@ -363,8 +375,8 @@ def pausa(empleado_id: str):
     # 🔹 INICIAR PAUSA
     if pausa_inicio is None:
         cursor.execute(
-            "UPDATE fichajes SET hora_pausa_inicio=? WHERE empleado_id=? AND fecha=?",
-            (hora_actual, empleado_id, hoy)
+            "UPDATE fichajes SET hora_pausa_inicio=?, motivo_pausa=? WHERE empleado_id=? AND fecha=?",
+            (hora_actual, motivo, empleado_id, hoy)
         )
         conn.commit()
         conn.close()
