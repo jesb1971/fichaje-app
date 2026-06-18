@@ -284,9 +284,9 @@ def exportar_excel(fecha_inicio: str = None, fecha_fin: str = None, empleado_id:
             minutos_totales = diff.seconds // 60
 
         # 🔹 DESCONTAR PAUSA SI EXISTE
-            if fila[6] and fila[7]:  # pausa_inicio y pausa_fin
-                p1 = datetime.strptime(fila[6], "%H:%M:%S")
-                p2 = datetime.strptime(fila[7], "%H:%M:%S")
+            if fila[8] and fila[9]:  # pausa_inicio y pausa_fin
+                p1 = datetime.strptime(fila[8], "%H:%M:%S")
+                p2 = datetime.strptime(fila[9], "%H:%M:%S")
                 pausa = p2 - p1
                 minutos_totales -= pausa.seconds // 60
 
