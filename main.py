@@ -10,23 +10,6 @@ import qrcode
 
 app = FastAPI()
 
-# 🔧 MIGRACIÓN BD (SOLO UNA VEZ)
-conn = database.conectar()
-cursor = conn.cursor()
-
-try:
-    cursor.execute("ALTER TABLE fichajes ADD COLUMN hora_pausa_inicio TEXT")
-except:
-    pass
-
-try:
-    cursor.execute("ALTER TABLE fichajes ADD COLUMN hora_pausa_fin TEXT")
-except:
-    pass
-
-conn.commit()
-conn.close()
-
 # 🔥 STATIC
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 app.mount("/static", StaticFiles(directory=os.path.join(BASE_DIR, "static")), name="static")
@@ -253,7 +236,7 @@ def estado(empleado_id: str):
 
     return {"estado": "sin_fichar"}   
 
-# ✅ EXPORTAR EXCEL (ARREGLADO)
+# ✅ EXPORTAR EXCEL (FINAL CORREGIDO)
 @app.get("/exportar_excel")
 def exportar_excel(fecha_inicio: str = None, fecha_fin: str = None, empleado_id: str = None, empresa: str = None):
 
@@ -268,7 +251,7 @@ def exportar_excel(fecha_inicio: str = None, fecha_fin: str = None, empleado_id:
         query += " AND fecha BETWEEN ? AND ?"
         params.extend([fecha_inicio, fecha_fin])
 
-    # 🔹 Filtro por empleado (IMPORTANTE: aquí no tocamos lógica rara)
+    # 🔹 Filtro por empleado 
     if empleado_id:
         query += " AND empleado_id = ?"
         params.append(empleado_id)
@@ -293,6 +276,8 @@ def exportar_excel(fecha_inicio: str = None, fecha_fin: str = None, empleado_id:
         empleado, fecha, entrada, salida, tipo, empresa = fila
 
         horas = "-"
+        minutos_totales = 0
+        
         if entrada and salida:
             h1 = datetime.strptime(entrada,"%H:%M:%S")
             h2 = datetime.strptime(salida,"%H:%M:%S")
@@ -301,20 +286,24 @@ def exportar_excel(fecha_inicio: str = None, fecha_fin: str = None, empleado_id:
             minutos_totales = diff.seconds // 60
 
         # 🔹 DESCONTAR PAUSA SI EXISTE
-            if fila[8] and fila[9]:  # pausa_inicio y pausa_fin
-                p1 = datetime.strptime(fila[8], "%H:%M:%S")
-                p2 = datetime.strptime(fila[9], "%H:%M:%S")
+            if fila[6] and fila[7]:  # pausa_inicio y pausa_fin
+                p1 = datetime.strptime(fila[6], "%H:%M:%S")
+                p2 = datetime.strptime(fila[7], "%H:%M:%S")
                 pausa = p2 - p1
                 minutos_totales -= pausa.seconds // 60
 
             horas = f"{minutos_totales//60}h {minutos_totales%60}m"
             total_minutos += minutos_totales
-
-        nombre = EMPLEADOS.get(empleado,{}).get("nombre",empleado)
+            
+        # 🔹 NOMBRE EMPLEADO ROBUSTO
+        empleado_data = EMPLEADOS.get(empleado)
+        if empleado_data:
+            nombre = empleado_data.get("nombre", empleado)
+        else:
+            nombre = empleado
         
-        # 🔹 calcular pausa para Excel
-        pausa_texto = "-"
-        
+        # 🔹 PAUSA TEXTO
+        pausa_texto = "-"        
         if fila[6] and fila[7]:
             p1 = datetime.strptime(fila[6], "%H:%M:%S")
             p2 = datetime.strptime(fila[7], "%H:%M:%S")
@@ -327,7 +316,6 @@ def exportar_excel(fecha_inicio: str = None, fecha_fin: str = None, empleado_id:
     minutos_total = total_minutos % 60
 
     ws.append([])  # línea en blanco
-
     ws.append(["", "", "", "", "", "TOTAL", f"{horas_total}h {minutos_total}m", ""])
 
     ruta="/var/data/fichajes.xlsx"
