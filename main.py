@@ -10,17 +10,6 @@ import qrcode
 
 app = FastAPI()
 
-# 🔧 MIGRACIÓN BD (AÑADIR MOTIVO PAUSA)
-conn = database.conectar()
-cursor = conn.cursor()
-
-try:
-    cursor.execute("ALTER TABLE fichajes ADD COLUMN motivo_pausa TEXT")
-except:
-    pass
-
-conn.commit()
-conn.close()
 
 # 🔥 STATIC
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -323,7 +312,7 @@ def exportar_excel(fecha_inicio: str = None, fecha_fin: str = None, empleado_id:
             minutos = (p2 - p1).seconds // 60
             pausa_texto = f"{minutos//60}h {minutos%60}m"
             
-        motivo_texto = fila[8] if len(fila) > 8 else "-"
+        motivo_texto = fila[8] if len(fila) > 8 and fila[8] else "-"
             
         ws.append([nombre,empresa,fecha,entrada,salida,pausa_texto,motivo_texto,horas,tipo])
         
