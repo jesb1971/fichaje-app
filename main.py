@@ -256,7 +256,7 @@ def exportar_excel(fecha_inicio: str = None, fecha_fin: str = None, empleado_id:
     conn = database.conectar()
     cursor = conn.cursor()
 
-    query = "SELECT empleado_id,fecha,hora_entrada,hora_salida,tipo,empresa,hora_pausa_inicio,hora_pausa_fin FROM fichajes WHERE 1=1"
+    query = "SELECT empleado_id,fecha,hora_entrada,hora_salida,tipo,empresa,hora_pausa_inicio,hora_pausa_fin,motivo_pausa FROM fichajes WHERE 1=1"
     params = []
 
     # 🔹 Filtro por fechas
@@ -281,7 +281,7 @@ def exportar_excel(fecha_inicio: str = None, fecha_fin: str = None, empleado_id:
     wb = openpyxl.Workbook()
     ws = wb.active
 
-    ws.append(["Empleado","Empresa","Fecha","Entrada","Salida","Pausa no computable","Horas","Tipo"])
+    ws.append(["Empleado","Empresa","Fecha","Entrada","Salida","Pausa no computable","Motivo pausa","Horas","Tipo"])
     
     total_minutos = 0
 
@@ -323,7 +323,9 @@ def exportar_excel(fecha_inicio: str = None, fecha_fin: str = None, empleado_id:
             minutos = (p2 - p1).seconds // 60
             pausa_texto = f"{minutos//60}h {minutos%60}m"
             
-        ws.append([nombre,empresa,fecha,entrada,salida,pausa_texto,horas,tipo])
+        motivo_texto = fila[8] if len(fila) > 8 else "-"
+            
+        ws.append([nombre,empresa,fecha,entrada,salida,pausa_texto,motivo_texto,horas,tipo])
         
     horas_total = total_minutos // 60
     minutos_total = total_minutos % 60
