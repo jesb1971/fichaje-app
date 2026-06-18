@@ -214,7 +214,7 @@ def ver_fichajes():
             "tipo": fila[5],
             "ip": fila[7] if len(fila) > 7 else "-",
             "pausa_inicio": fila[8] if len(fila) > 8 else None,
-            "pausa_fin": fila[9] if len(fila) > 9 else None
+            "pausa_fin": fila[9] if len(fila) > 9 else None,
             "motivo_pausa": fila[10] if len(fila) > 10 else "-"
         })
 
