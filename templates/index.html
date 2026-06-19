@@ -216,6 +216,7 @@ function pausa() {
     .then(res => res.json())
     .then(data => {
         alert(data.mensaje + " - " + data.hora);
+		document.getElementById("motivoPausa").value = "";
     });
 }
 

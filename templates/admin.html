@@ -131,6 +131,11 @@ th {
 	white-space: nowrap;
 }
 
+.activo {
+	background-color: #e8f8f5;
+	font-weight: bold;
+}
+
 
 </style>
 
@@ -256,6 +261,10 @@ function pintarTabla(datos) {
         if (f.empresa.includes("Proyectos")) clase = "PROYECTOS";
         if (f.empresa.includes("PROICAFOR")) clase = "PROICAFOR";
         if (f.empresa.includes("GRUPO")) clase = "GRUPO";
+		
+		if (f.entrada && !f.salida) {
+			clase += " activo";
+		}
 
         let horas = "-";
         if (f.entrada && f.salida) {
@@ -277,11 +286,23 @@ function pintarTabla(datos) {
                 <td>${f.entrada || "-"}</td>
                 <td>${f.salida || "-"}</td>
 				<td>${
-					f.pausa_inicio && f.pausa_fin
-					? calcularPausa(f.pausa_inicio, f.pausa_fin)
+					f.pausa_inicio
+					? (f.pausa_fin
+						? calcularPausa(f.pausa_inicio, f.pausa_fin)
+						: '<span style="color:#e67e22;font-weight:bold;">En pausa</span>')
+					: "-"
+				}</td>
+				<td>${
+					 f.motivo_pausa && f.motivo_pausa !== "-"
+					 ? `<span style="
+						background:#e9ecef;
+						padding:4px 8px;
+						border-radius:6px;
+						font-size:12px;
+						font-weight:bold;
+					 ">${f.motivo_pausa}</span>`
 					 : "-"
 				}</td>
-				<td>${f.motivo_pausa || "-"}</td>
                 <td>${horas}</td>
                 <td style="color:${f.tipo === "remoto" ? "red" : "green"};font-weight:bold;">
                     ${f.tipo.toUpperCase()}
@@ -307,11 +328,15 @@ function calcularPausa(inicio, fin) {
 function calcularTotalHoras(datos) {
 
     let totalMinutos = 0;
+	let activos = 0;
 
     datos.forEach(f => {
-        if (f.entrada && f.salida) {
-
-            const [h1, m1] = f.entrada.split(":").map(Number);
+        if (f.entrada && !f.salida) {
+			activos++;
+		}
+		
+		if (f.entrada && f.salida) {
+			const [h1, m1] = f.entrada.split(":").map(Number);
             const [h2, m2] = f.salida.split(":").map(Number);
 
             const inicio = h1 * 60 + m1;
@@ -325,7 +350,7 @@ function calcularTotalHoras(datos) {
     const minutos = totalMinutos % 60;
 
     document.getElementById("totalHoras").innerText =
-        "Total horas: " + horas + "h " + minutos + "m";
+        "Total horas: " + horas + "h " + minutos + "m | Activos: " + activos;
 }
 
 // 🔎 Filtrar
