@@ -292,7 +292,7 @@ function pintarTabla(datos) {
 						: '<span style="color:#e67e22;font-weight:bold;">En pausa</span>')
 					: "-"
 				}</td>
-				<td>${
+				<td style="text-align:center;">${
 					 f.motivo_pausa && f.motivo_pausa !== "-"
 					 ? `<span style="
 						background:#e9ecef;
@@ -331,10 +331,21 @@ function calcularTotalHoras(datos) {
 	let empleadosActivos = new Set();
 
     datos.forEach(f => {
+		// 🔹 CONTAR ACTIVOS CORRECTAMENTE
         if (f.entrada && !f.salida) {
-			empleadosActivos.add(f.empleado);
-		}
+			// solo si NO hay otro registro más reciente con salida
+			const tieneSalidaPosterior = datos.some(d => 
+					d.empleado === f.empleado &&
+					d.fecha === f.fecha &&
+					d.salida
+		);
 		
+			if (!tieneSalidaPosterior) {
+				empleadosActivos.add(f.empleado);
+			  }
+		  }
+		
+		// 🔹 SUMAR HORAS
 		if (f.entrada && f.salida) {
 			const [h1, m1] = f.entrada.split(":").map(Number);
             const [h2, m2] = f.salida.split(":").map(Number);
@@ -345,8 +356,8 @@ function calcularTotalHoras(datos) {
             totalMinutos += (fin - inicio);
         }
     });
-
-    const horas = Math.floor(totalMinutos / 60);
+	
+	const horas = Math.floor(totalMinutos / 60);
     const minutos = totalMinutos % 60;
 
     document.getElementById("totalHoras").innerText =
