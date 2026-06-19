@@ -349,14 +349,30 @@ function calcularTotalHoras(datos) {
     // 🔹 SUMAR HORAS (TODOS LOS REGISTROS)
     datos.forEach(f => {
         if (f.entrada && f.salida) {
-            const [h1, m1] = f.entrada.split(":").map(Number);
-            const [h2, m2] = f.salida.split(":").map(Number);
+			const [h1, m1] = f.entrada.split(":").map(Number);
+			const [h2, m2] = f.salida.split(":").map(Number);
 
-            const inicio = h1 * 60 + m1;
-            const fin = h2 * 60 + m2;
+			const inicio = h1 * 60 + m1;
+			const fin = h2 * 60 + m2;
 
-            totalMinutos += (fin - inicio);
-        }
+			let minutos = (fin - inicio);
+
+			// 🔹 RESTAR PAUSA SI EXISTE
+			if (f.pausa_inicio && f.pausa_fin && f.pausa_inicio !== "-" && f.pausa_fin !== "-") {
+			const [p1h, p1m] = f.pausa_inicio.split(":").map(Number);
+			const [p2h, p2m] = f.pausa_fin.split(":").map(Number);
+
+			const pausaInicio = p1h * 60 + p1m;
+			const pausaFin = p2h * 60 + p2m;
+
+			minutos -= (pausaFin - pausaInicio);
+		}
+
+		// 🔹 PROTECCIÓN
+		minutos = Math.max(0, minutos);
+
+		totalMinutos += minutos;
+	}
     });
 
     const horas = Math.floor(totalMinutos / 60);
