@@ -328,26 +328,28 @@ function calcularPausa(inicio, fin) {
 function calcularTotalHoras(datos) {
 
     let totalMinutos = 0;
-	let empleadosActivos = new Set();
+    let empleadosActivos = new Set();
+    
+    // 🔹 OBTENER ÚLTIMO REGISTRO DE CADA EMPLEADO
+    const ultimos = {};
 
     datos.forEach(f => {
-		// 🔹 CONTAR ACTIVOS CORRECTAMENTE
+        if (!ultimos[f.empleado]) {
+            ultimos[f.empleado] = f;
+        }
+    });
+        
+    // 🔹 CONTAR ACTIVOS (SOLO ÚLTIMO REGISTRO)
+    Object.values(ultimos).forEach(f => {
         if (f.entrada && !f.salida) {
-			// solo si NO hay otro registro más reciente con salida
-			const tieneSalidaPosterior = datos.some(d => 
-					d.empleado === f.empleado &&
-					d.fecha === f.fecha &&
-					d.salida
-		);
-		
-			if (!tieneSalidaPosterior) {
-				empleadosActivos.add(f.empleado);
-			  }
-		  }
-		
-		// 🔹 SUMAR HORAS
-		if (f.entrada && f.salida) {
-			const [h1, m1] = f.entrada.split(":").map(Number);
+            empleadosActivos.add(f.empleado);
+        }
+    });
+    
+    // 🔹 SUMAR HORAS (TODOS LOS REGISTROS)
+    datos.forEach(f => {
+        if (f.entrada && f.salida) {
+            const [h1, m1] = f.entrada.split(":").map(Number);
             const [h2, m2] = f.salida.split(":").map(Number);
 
             const inicio = h1 * 60 + m1;
@@ -356,8 +358,8 @@ function calcularTotalHoras(datos) {
             totalMinutos += (fin - inicio);
         }
     });
-	
-	const horas = Math.floor(totalMinutos / 60);
+
+    const horas = Math.floor(totalMinutos / 60);
     const minutos = totalMinutos % 60;
 
     document.getElementById("totalHoras").innerText =
