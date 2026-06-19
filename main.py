@@ -269,6 +269,19 @@ def exportar_excel(fecha_inicio: str = None, fecha_fin: str = None, empleado_id:
 
     wb = openpyxl.Workbook()
     ws = wb.active
+    
+    from openpyxl.worksheet.page import PageSetupProperties
+
+    ws.page_setup.fitToHeight = 1
+    ws.page_setup.fitToWidth = 1
+    ws.page_setup.orientation = ws.ORIENTATION_LANDSCAPE
+    ws.page_setup.paperSize = ws.PAPERSIZE_A4
+    ws.page_setup.fitToPage = True
+    
+    ws.page_margins.left = 0.3
+    ws.page_margins.right = 0.3
+    ws.page_margins.top = 0.5
+    ws.page_margins.bottom = 0.5
 
     ws.append(["Empleado","Empresa","Fecha","Entrada","Salida","Pausa no computable","Motivo pausa","Horas","Tipo"])
     
@@ -390,3 +403,4 @@ def pausa(empleado_id: str, motivo: str = None):
     # ❌ YA TIENE PAUSA COMPLETA
     conn.close()
     return {"mensaje": "Ya has registrado una pausa hoy", "hora": hora_actual}
+    
