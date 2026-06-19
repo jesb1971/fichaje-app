@@ -132,7 +132,7 @@ th {
 }
 
 .activo {
-	background-color: #e8f8f5;
+	background-color: #e3f2fd;
 	font-weight: bold;
 }
 
@@ -263,7 +263,7 @@ function pintarTabla(datos) {
         if (f.empresa.includes("GRUPO")) clase = "GRUPO";
 		
 		if (f.entrada && !f.salida) {
-			clase += " activo";
+			clase = clase ? clase + " activo" : "activo";
 		}
 
         let horas = "-";
@@ -328,11 +328,11 @@ function calcularPausa(inicio, fin) {
 function calcularTotalHoras(datos) {
 
     let totalMinutos = 0;
-	let activos = 0;
+	let empleadosActivos = new Set();
 
     datos.forEach(f => {
         if (f.entrada && !f.salida) {
-			activos++;
+			empleadosActivos.add(f.empleado);
 		}
 		
 		if (f.entrada && f.salida) {
@@ -350,7 +350,7 @@ function calcularTotalHoras(datos) {
     const minutos = totalMinutos % 60;
 
     document.getElementById("totalHoras").innerText =
-        "Total horas: " + horas + "h " + minutos + "m | Activos: " + activos;
+        "Resumen → Total: " + horas + "h " + minutos + "m | Activos ahora: " + empleadosActivos.size;
 }
 
 // 🔎 Filtrar
