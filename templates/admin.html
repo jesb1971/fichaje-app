@@ -347,33 +347,38 @@ function calcularTotalHoras(datos) {
     });
     
     // 🔹 SUMAR HORAS (TODOS LOS REGISTROS)
-    datos.forEach(f => {
-        if (f.entrada && f.salida) {
-			const [h1, m1] = f.entrada.split(":").map(Number);
-			const [h2, m2] = f.salida.split(":").map(Number);
+   datos.forEach(f => {
+	if (f.entrada && f.salida) {
+	
+		const [h1, m1] = f.entrada.split(":").map(Number);
+        const [h2, m2] = f.salida.split(":").map(Number);
 
-			const inicio = h1 * 60 + m1;
-			const fin = h2 * 60 + m2;
+        const inicio = h1 * 60 + m1;
+        const fin = h2 * 60 + m2;
 
-			let minutos = (fin - inicio);
+        // 🔹 EVITAR ERRORES (salida antes que entrada)
+        if (fin > inicio) {
 
-			// 🔹 RESTAR PAUSA SI EXISTE
-			if (f.pausa_inicio && f.pausa_fin && f.pausa_inicio !== "-" && f.pausa_fin !== "-") {
-			const [p1h, p1m] = f.pausa_inicio.split(":").map(Number);
-			const [p2h, p2m] = f.pausa_fin.split(":").map(Number);
+            let minutos = (fin - inicio);
 
-			const pausaInicio = p1h * 60 + p1m;
-			const pausaFin = p2h * 60 + p2m;
+            // 🔹 RESTAR PAUSA SI EXISTE
+            if (f.pausa_inicio && f.pausa_fin && f.pausa_inicio !== "-" && f.pausa_fin !== "-") {
+                const [p1h, p1m] = f.pausa_inicio.split(":").map(Number);
+                const [p2h, p2m] = f.pausa_fin.split(":").map(Number);
 
-			minutos -= (pausaFin - pausaInicio);
-		}
+                const pausaInicio = p1h * 60 + p1m;
+                const pausaFin = p2h * 60 + p2m;
 
-		// 🔹 PROTECCIÓN
-		minutos = Math.max(0, minutos);
+                minutos -= (pausaFin - pausaInicio);
+            }
 
-		totalMinutos += minutos;
-	}
-    });
+            // 🔹 PROTECCIÓN
+            minutos = Math.max(0, minutos);
+
+            totalMinutos += minutos;
+        }
+    }
+});
 
     const horas = Math.floor(totalMinutos / 60);
     const minutos = totalMinutos % 60;
