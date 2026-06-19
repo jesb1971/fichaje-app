@@ -285,7 +285,7 @@ function pintarTabla(datos) {
                 <td style="text-align:center;">${f.fecha}</td>
                 <td>${f.entrada || "-"}</td>
                 <td>${f.salida || "-"}</td>
-				<td>${
+				<td style="text-align:center;">${
 					f.pausa_inicio
 					? (f.pausa_fin
 						? calcularPausa(f.pausa_inicio, f.pausa_fin)
