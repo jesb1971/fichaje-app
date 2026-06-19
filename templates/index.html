@@ -212,7 +212,7 @@ function pausa() {
 		return;
 	}
 
-    fetch(`/pausa?empleado_id=${empleado}`)
+    fetch(`/pausa?empleado_id=${empleado}&motivo=${encodeURIComponent(motivo)}`)
     .then(res => res.json())
     .then(data => {
         alert(data.mensaje + " - " + data.hora);
