@@ -233,7 +233,7 @@ def estado(empleado_id: str):
     if entrada and not salida:
         return {"estado": "entrada_hecha"}
 
-    if entrada and salida:
+    if entrada and salida and entrada != "-" and salida != "-":
         return {"estado": "completo"}
 
     return {"estado": "sin_fichar"}   
@@ -275,24 +275,27 @@ def exportar_excel(fecha_inicio: str = None, fecha_fin: str = None, empleado_id:
     total_minutos = 0
 
     for fila in datos:
-        empleado, fecha, entrada, salida, tipo, empresa = fila
+        empleado, fecha, entrada, salida, tipo, empresa, pausa_inicio, pausa_fin, motivo = fila
 
         horas = "-"
         minutos_totales = 0
         
-        if entrada and salida:
+        if entrada and salida and entrada != "-" and salida != "-":
             h1 = datetime.strptime(entrada,"%H:%M:%S")
             h2 = datetime.strptime(salida,"%H:%M:%S")
             diff = h2 - h1
 
-            minutos_totales = diff.seconds // 60
+            minutos_totales = int(diff.total_seconds() // 60)
 
         # 🔹 DESCONTAR PAUSA SI EXISTE
-            if fila[6] and fila[7]:  # pausa_inicio y pausa_fin
-                p1 = datetime.strptime(fila[6], "%H:%M:%S")
-                p2 = datetime.strptime(fila[7], "%H:%M:%S")
+            if pausa_inicio and pausa_fin and pausa_inicio != "-" and pausa_fin != "-":  # pausa_inicio y pausa_fin
+                p1 = datetime.strptime(pausa_inicio, "%H:%M:%S")
+                p2 = datetime.strptime(pausa_fin, "%H:%M:%S")
                 pausa = p2 - p1
-                minutos_totales -= pausa.seconds // 60
+                minutos_totales -= int(pausa.total_seconds() // 60)
+                
+            # 🔹 PROTECCIÓN GLOBAL
+            minutos_totales = max(0, minutos_totales)
 
             horas = f"{minutos_totales//60}h {minutos_totales%60}m"
             total_minutos += minutos_totales
@@ -306,13 +309,13 @@ def exportar_excel(fecha_inicio: str = None, fecha_fin: str = None, empleado_id:
         
         # 🔹 PAUSA TEXTO
         pausa_texto = "-"        
-        if fila[6] and fila[7]:
-            p1 = datetime.strptime(fila[6], "%H:%M:%S")
-            p2 = datetime.strptime(fila[7], "%H:%M:%S")
-            minutos = (p2 - p1).seconds // 60
+        if pausa_inicio and pausa_fin and pausa_inicio != "-" and pausa_fin != "-":
+            p1 = datetime.strptime(pausa_inicio, "%H:%M:%S")
+            p2 = datetime.strptime(pausa_fin, "%H:%M:%S")
+            minutos = int((p2 - p1).total_seconds() // 60)
             pausa_texto = f"{minutos//60}h {minutos%60}m"
             
-        motivo_texto = fila[8] if len(fila) > 8 and fila[8] else "-"
+        motivo_texto = motivo if motivo else "-"
             
         ws.append([nombre,empresa,fecha,entrada,salida,pausa_texto,motivo_texto,horas,tipo])
         
