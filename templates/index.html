@@ -102,33 +102,34 @@ if (empleadoQR) {
 // 🔥 FICHAR
 async function fichar() {
     let pin = document.getElementById("pin").value;
-    
-    if (!empleado || !pin) {
+    let resultado = document.getElementById("resultado");
+
+    if (!pin) {
         alert("Introduce tu PIN");
         return;
     }
 
     resultado.innerHTML = "";
 
-	// 🔥 CONSULTAR ESTADO
-	const resEstado = await fetch(`/estado?empleado_id=${empleado}`);
-	const dataEstado = await resEstado.json();
+    // 🔥 CONSULTAR ESTADO (AHORA POR PIN)
+    const resEstado = await fetch(`/estado?pin=${pin}`);
+    const dataEstado = await resEstado.json();
 
-	// ❌ YA COMPLETO → BLOQUEAR
-	if (dataEstado.estado === "completo") {
-		alert("Ya has fichado entrada y salida hoy");
-		return;
-	}
+    // ❌ YA COMPLETO → BLOQUEAR
+    if (dataEstado.estado === "completo") {
+        alert("Ya has fichado entrada y salida hoy");
+        return;
+    }
 
-	// ⚠️ YA TIENE ENTRADA → CONFIRMAR SALIDA
-	if (dataEstado.estado === "entrada_hecha") {
-		const confirmar = confirm("Ya tienes una entrada registrada. ¿Seguro que deseas registrar la salida?");
-		if (!confirmar) {
-			return;
-		}
-	}
+    // ⚠️ YA TIENE ENTRADA → CONFIRMAR SALIDA
+    if (dataEstado.estado === "entrada_hecha") {
+        const confirmar = confirm("Ya tienes una entrada registrada. ¿Seguro que deseas registrar la salida?");
+        if (!confirmar) {
+            return;
+        }
+    }
 
-    fetch(`/fichar?empleado_id=${empleado}&pin=${pin}`)
+    fetch(`/fichar?pin=${pin}`)
     .then(res => res.json().then(data => ({ ok: res.ok, data })))
     .then(({ ok, data }) => {
 
@@ -151,10 +152,9 @@ async function fichar() {
                 </div>`;
         }
 
-        // 🔄 SOLO LIMPIAR PIN (NO EMPLEADO)
+        // 🔄 LIMPIAR PIN
         document.getElementById("pin").value = "";
 
-        // 🔁 ACTUALIZAR ESTADO (BIEN UBICADO)
         if (typeof actualizarEstado === "function") {
             actualizarEstado();
         }
@@ -170,80 +170,6 @@ async function fichar() {
             </div>`;
     });
 }
-
-from fastapi import HTTPException
-
-@app.get("/pausa")
-def pausa(pin: str, motivo: str = None):
-
-    conn = database.conectar()
-    cursor = conn.cursor()
-
-    # 🔹 CONVERTIR PIN → EMPLEADO
-    empleado_id = None
-
-    for key, value in EMPLEADOS.items():
-        if value["pin"] == pin:
-            empleado_id = key
-            break
-
-    if not empleado_id:
-        raise HTTPException(status_code=400, detail="PIN incorrecto")
-
-    # 🔹 FECHA Y HORA ACTUAL
-    from datetime import datetime
-    ahora = datetime.now()
-    hoy = ahora.strftime("%Y-%m-%d")
-    hora_actual = ahora.strftime("%H:%M:%S")
-
-    # 🔹 VER SI YA ESTÁ EN PAUSA O NO
-    cursor.execute("""
-        SELECT hora_pausa_inicio, hora_pausa_fin
-        FROM fichajes
-        WHERE empleado_id=? AND fecha=?
-    """, (empleado_id, hoy))
-
-    fila = cursor.fetchone()
-
-    if fila:
-        pausa_inicio, pausa_fin = fila
-
-        # 🔹 SI NO HA INICIADO PAUSA → INICIAR
-        if not pausa_inicio:
-            cursor.execute("""
-                UPDATE fichajes
-                SET hora_pausa_inicio=?, motivo_pausa=?
-                WHERE empleado_id=? AND fecha=?
-            """, (hora_actual, motivo, empleado_id, hoy))
-
-            conn.commit()
-            conn.close()
-
-            return {
-                "mensaje": "Pausa iniciada",
-                "hora": hora_actual
-            }
-
-        # 🔹 SI YA INICIÓ PERO NO TERMINÓ → FINALIZAR
-        elif pausa_inicio and not pausa_fin:
-            cursor.execute("""
-                UPDATE fichajes
-                SET hora_pausa_fin=?
-                WHERE empleado_id=? AND fecha=?
-            """, (hora_actual, empleado_id, hoy))
-
-            conn.commit()
-            conn.close()
-
-            return {
-                "mensaje": "Pausa finalizada",
-                "hora": hora_actual
-            }
-
-    conn.close()
-
-    raise HTTPException(status_code=400, detail="No hay fichaje activo para hoy")
-
 </script>
 
 </body>

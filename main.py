@@ -120,13 +120,20 @@ def app_web():
 
 # 🔥 FICHAR (CLAVE)
 @app.get("/fichar")
-def fichar(request: Request, empleado_id: str, pin: str):
+def fichar(request: Request, pin: str):
 
     ip = request.headers.get("x-forwarded-for", request.client.host)
     ip = ip.split(",")[0].strip()
 
-    if PINS.get(empleado_id) != pin:
-        guardar_alerta(empleado_id, "PIN_INCORRECTO", "Intento fallido", ip)
+    # 🔹 CONVERTIR PIN → EMPLEADO
+    empleado_id = None
+
+    for key, value in EMPLEADOS.items():
+        if value["pin"] == pin:
+            empleado_id = key
+            break
+
+    if not empleado_id:
         raise HTTPException(status_code=403, detail="PIN incorrecto")
 
     IPS_PERMITIDAS = ["92.185.36.146","90.75.200.225","92.185.42.206"]
@@ -148,12 +155,19 @@ def fichar(request: Request, empleado_id: str, pin: str):
     registro = cursor.fetchone()
 
     if registro is None:
-        cursor.execute("INSERT INTO fichajes (empleado_id,fecha,hora_entrada,tipo,ip,empresa) VALUES (?,?,?,?,?,?)",
-                       (empleado_id,fecha,hora,tipo,ip,empresa))
+        cursor.execute(
+            "INSERT INTO fichajes (empleado_id,fecha,hora_entrada,tipo,ip,empresa) VALUES (?,?,?,?,?,?)",
+            (empleado_id,fecha,hora,tipo,ip,empresa)
+        )
         mensaje = "Entrada registrada"
+
     elif registro[4] is None:
-        cursor.execute("UPDATE fichajes SET hora_salida=? WHERE id=?", (hora, registro[0]))
+        cursor.execute(
+            "UPDATE fichajes SET hora_salida=? WHERE id=?",
+            (hora, registro[0])
+        )
         mensaje = "Salida registrada"
+
     else:
         mensaje = "Ya has fichado hoy"
 
@@ -209,12 +223,24 @@ def ver_fichajes():
 
     return {"fichajes": resultado}
     
-@app.get("/estado")
-def estado(empleado_id: str):
+@@app.get("/estado")
+def estado(pin: str):
 
     conn = database.conectar()
     cursor = conn.cursor()
 
+    # 🔹 CONVERTIR PIN → EMPLEADO
+    empleado_id = None
+
+    for key, value in EMPLEADOS.items():
+        if value["pin"] == pin:
+            empleado_id = key
+            break
+
+    if not empleado_id:
+        raise HTTPException(status_code=400, detail="PIN incorrecto")
+
+    # 🔹 FECHA ACTUAL
     hoy = datetime.now(ZoneInfo("Atlantic/Canary")).strftime("%Y-%m-%d")
 
     cursor.execute(
@@ -236,7 +262,7 @@ def estado(empleado_id: str):
     if entrada and salida and entrada != "-" and salida != "-":
         return {"estado": "completo"}
 
-    return {"estado": "sin_fichar"}   
+    return {"estado": "sin_fichar"}
 
 # ✅ EXPORTAR EXCEL (FINAL CORREGIDO)
 @app.get("/exportar_excel")
