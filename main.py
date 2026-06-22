@@ -223,7 +223,7 @@ def ver_fichajes():
 
     return {"fichajes": resultado}
     
-@@app.get("/estado")
+@app.get("/estado")
 def estado(pin: str):
 
     conn = database.conectar()
@@ -428,4 +428,3 @@ def pausa(empleado_id: str, motivo: str = None):
     # ❌ YA TIENE PAUSA COMPLETA
     conn.close()
     return {"mensaje": "Ya has registrado una pausa hoy", "hora": hora_actual}
-    
