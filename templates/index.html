@@ -99,6 +99,8 @@ if (empleadoQR) {
     document.getElementById("empleado").value = empleadoQR;
 }
 
+<script>
+
 // 🔥 FICHAR
 async function fichar() {
     let pin = document.getElementById("pin").value;
@@ -111,64 +113,77 @@ async function fichar() {
 
     resultado.innerHTML = "";
 
-    // 🔥 CONSULTAR ESTADO (AHORA POR PIN)
-    const resEstado = await fetch(`/estado?pin=${pin}`);
-    const dataEstado = await resEstado.json();
+    let dataEstado;
 
-    // ❌ YA COMPLETO → BLOQUEAR
+    // 🔹 PROTEGER ERROR BACKEND
+    try {
+        const resEstado = await fetch(`/estado?pin=${pin}`);
+        dataEstado = await resEstado.json();
+    } catch {
+        alert("Error en servidor (estado)");
+        return;
+    }
+
     if (dataEstado.estado === "completo") {
         alert("Ya has fichado entrada y salida hoy");
         return;
     }
 
-    // ⚠️ YA TIENE ENTRADA → CONFIRMAR SALIDA
     if (dataEstado.estado === "entrada_hecha") {
         const confirmar = confirm("Ya tienes una entrada registrada. ¿Seguro que deseas registrar la salida?");
-        if (!confirmar) {
-            return;
-        }
+        if (!confirmar) return;
     }
 
     fetch(`/fichar?pin=${pin}`)
     .then(res => res.json().then(data => ({ ok: res.ok, data })))
     .then(({ ok, data }) => {
 
-        if (!ok) {
-            throw data;
-        }
+        if (!ok) throw data;
 
-        // 🔴 FUERA DE SEDE
-        if (data.aviso) {
-            resultado.innerHTML = `
-                <div style="background:#ffe5e5;color:#b30000;padding:15px;border-radius:8px;">
-                    ${data.mensaje} - ${data.hora}<br>
-                    ${data.aviso}
-                </div>`;
-        } else {
-            // 🟢 NORMAL
-            resultado.innerHTML = `
-                <div style="background:#e6ffe6;color:#006600;padding:15px;border-radius:8px;">
-                    ${data.mensaje} - ${data.hora}
-                </div>`;
-        }
+        resultado.innerHTML = `
+            <div style="background:#e6ffe6;color:#006600;padding:15px;border-radius:8px;">
+                ${data.mensaje} - ${data.hora}
+            </div>`;
 
-        // 🔄 LIMPIAR PIN
         document.getElementById("pin").value = "";
-
-        if (typeof actualizarEstado === "function") {
-            actualizarEstado();
-        }
 
     })
     .catch(err => {
-
-        console.error("ERROR:", err);
-
-        resultado.innerHTML = `
-            <div style="background:#fff3cd;color:#856404;padding:15px;border-radius:8px;">
-                ${err.detail || "Error al fichar"}
-            </div>`;
+        console.error(err);
+        alert("Error al fichar");
     });
+}
+
+
+// 🔥 PAUSA (ESTA FALTABA)
+function pausa() {
+
+    const pin = document.getElementById("pin").value;
+    const motivo = document.getElementById("motivoPausa").value;
+
+    if (!pin) {
+        alert("Introduce tu PIN");
+        return;
+    }
+
+    if (!motivo) {
+        alert("Selecciona un motivo");
+        return;
+    }
+
+    fetch(`/pausa?pin=${pin}&motivo=${encodeURIComponent(motivo)}`)
+    .then(res => res.json())
+    .then(data => {
+        alert(data.mensaje + " - " + data.hora);
+        document.getElementById("motivoPausa").value = "";
+        document.getElementById("pin").value = "";
+    })
+    .catch(() => {
+        alert("Error en pausa");
+    });
+}
+
+</script>
 }
 </script>
 
