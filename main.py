@@ -128,8 +128,8 @@ def fichar(request: Request, pin: str):
     # 🔹 CONVERTIR PIN → EMPLEADO
     empleado_id = None
 
-    for key, value in EMPLEADOS.items():
-        if value["pin"] == pin:
+    for key, value in PINS.items():
+        if value == pin:
             empleado_id = key
             break
 
@@ -232,8 +232,8 @@ def estado(pin: str):
     # 🔹 CONVERTIR PIN → EMPLEADO
     empleado_id = None
 
-    for key, value in EMPLEADOS.items():
-        if value["pin"] == pin:
+    for key, value in PINS.items():
+        if value == pin:
             empleado_id = key
             break
 
@@ -384,7 +384,18 @@ def panel_admin(token: str = None):
         return HTMLResponse(content=f.read())
         
 @app.get("/pausa")
-def pausa(empleado_id: str, motivo: str = None):
+def pausa(pin: str, motivo: str = None):
+    
+    empleado_id = None
+
+    for key, value in PINS.items():
+        if value == pin:
+            empleado_id = key
+            break
+
+    if not empleado_id:
+        raise HTTPException(status_code=400, detail="PIN incorrecto")
+    
     conn = database.conectar()
     cursor = conn.cursor()
 

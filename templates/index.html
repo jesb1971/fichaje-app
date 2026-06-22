@@ -45,12 +45,6 @@ button {
     cursor: pointer;
 }
 
-#accion {
-    font-size: 18px;
-    font-weight: bold;
-    margin-bottom: 10px;
-}
-
 #resultado {
     margin-top: 20px;
     font-size: 18px;
@@ -69,13 +63,9 @@ button {
     <p style="margin:5px 0 15px; color:#6b7280;">Control Horario</p>
 </div>
 
-
-
 <input type="password" id="pin" placeholder="Introduce tu PIN">
 
-<p id="accion"></p>
-
-<button id="botonFichar" onclick="fichar()">FICHAR</button>
+<button onclick="fichar()">FICHAR</button>
 
 <select id="motivoPausa" style="margin-top:10px;">
     <option value="">Selecciona motivo de pausa</option>
@@ -89,15 +79,6 @@ button {
 <div id="resultado"></div>
 
 </div>
-
-<script>
-
-// 🔥 AUTOCARGA DESDE QR
-const params = new URLSearchParams(window.location.search);
-const empleadoQR = params.get("empleado_id");
-if (empleadoQR) {
-    document.getElementById("empleado").value = empleadoQR;
-}
 
 <script>
 
@@ -115,13 +96,15 @@ async function fichar() {
 
     let dataEstado;
 
-    // 🔹 PROTEGER ERROR BACKEND
     try {
         const resEstado = await fetch(`/estado?pin=${pin}`);
+
+        if (!resEstado.ok) throw new Error();
+
         dataEstado = await resEstado.json();
+
     } catch {
-        alert("Error en servidor (estado)");
-        return;
+        dataEstado = { estado: "sin_fichar" };
     }
 
     if (dataEstado.estado === "completo") {
@@ -148,14 +131,12 @@ async function fichar() {
         document.getElementById("pin").value = "";
 
     })
-    .catch(err => {
-        console.error(err);
+    .catch(() => {
         alert("Error al fichar");
     });
 }
 
-
-// 🔥 PAUSA (ESTA FALTABA)
+// 🔥 PAUSA
 function pausa() {
 
     const pin = document.getElementById("pin").value;
@@ -183,8 +164,6 @@ function pausa() {
     });
 }
 
-</script>
-}
 </script>
 
 </body>
