@@ -69,32 +69,7 @@ button {
     <p style="margin:5px 0 15px; color:#6b7280;">Control Horario</p>
 </div>
 
-<select id="empleado">
-<option value="">Selecciona tu nombre</option>
-<option value="pilar_ganuza">Pilar Ganuza</option>
-<option value="begona_bonis">Begoña de Bonis</option>
-<option value="maria_eugenia_lopez">Mª Eugenia López Baez</option>
-<option value="luichy_jorge">María Luisa Jorge Cabrera</option>
-<option value="jose_sanchez">José Sánchez</option>
-<option value="javier_alfonso">Javier Alfonso</option>
-<option value="eduardo_rivero">Eduardo Rivero</option>
-<option value="nazaret_ramos">Nazaret Ramos</option>
-<option value="asuncion_olivares">Asunción Olivares</option>
-<option value="carla_martin">Carla Martín</option>
-<option value="cristo_diaz">Cristo Díaz</option>
-<option value="laura_perez">Laura Pérez</option>
-<option value="marta_cano">Marta Cano</option>
-<option value="soledad_fernandez">Soledad Fernández Abreu</option>
-<option value="candelaria_rodriguez">Candelaria Rodríguez</option>
-<option value="natalia_diaz">Natalia Díaz</option>
-<option value="sonia_gomez">Sonia Esther Gómez Díaz</option>
-<option value="andres_caceres">Andrés del Rosario Lorenzo Cáceres Mascareño</option>
-<option value="arsenio_cabrera">Arsenio Angel Angel Cabrera</option>
-<option value="maria_moure">Mª Nieves Moure Naveiro</option>
-<option value="francisco_padilla">Francisco Javier Padilla González</option>
-<option value="santiago_gutierrez">Santiago Gutiérrez Fariña</option>
 
-</select>
 
 <input type="password" id="pin" placeholder="Introduce tu PIN">
 
@@ -126,12 +101,10 @@ if (empleadoQR) {
 
 // 🔥 FICHAR
 async function fichar() {
-    let empleado = document.getElementById("empleado").value;
     let pin = document.getElementById("pin").value;
-    let resultado = document.getElementById("resultado");
-
+    
     if (!empleado || !pin) {
-        alert("Selecciona tu nombre y escribe tu PIN");
+        alert("Introduce tu PIN");
         return;
     }
 
@@ -198,27 +171,78 @@ async function fichar() {
     });
 }
 
-function pausa() {
-    const empleado = document.getElementById("empleado").value;
-	const motivo = document.getElementById("motivoPausa").value;
+from fastapi import HTTPException
 
-    if (!empleado) {
-        alert("Selecciona tu nombre primero");
-        return;
-    }
-	
-	if (!motivo) {
-		alert("Debes seleccionar un motivo de pausa");
-		return;
-	}
+@app.get("/pausa")
+def pausa(pin: str, motivo: str = None):
 
-    fetch(`/pausa?empleado_id=${empleado}&motivo=${encodeURIComponent(motivo)}`)
-    .then(res => res.json())
-    .then(data => {
-        alert(data.mensaje + " - " + data.hora);
-		document.getElementById("motivoPausa").value = "";
-    });
-}
+    conn = database.conectar()
+    cursor = conn.cursor()
+
+    # 🔹 CONVERTIR PIN → EMPLEADO
+    empleado_id = None
+
+    for key, value in EMPLEADOS.items():
+        if value["pin"] == pin:
+            empleado_id = key
+            break
+
+    if not empleado_id:
+        raise HTTPException(status_code=400, detail="PIN incorrecto")
+
+    # 🔹 FECHA Y HORA ACTUAL
+    from datetime import datetime
+    ahora = datetime.now()
+    hoy = ahora.strftime("%Y-%m-%d")
+    hora_actual = ahora.strftime("%H:%M:%S")
+
+    # 🔹 VER SI YA ESTÁ EN PAUSA O NO
+    cursor.execute("""
+        SELECT hora_pausa_inicio, hora_pausa_fin
+        FROM fichajes
+        WHERE empleado_id=? AND fecha=?
+    """, (empleado_id, hoy))
+
+    fila = cursor.fetchone()
+
+    if fila:
+        pausa_inicio, pausa_fin = fila
+
+        # 🔹 SI NO HA INICIADO PAUSA → INICIAR
+        if not pausa_inicio:
+            cursor.execute("""
+                UPDATE fichajes
+                SET hora_pausa_inicio=?, motivo_pausa=?
+                WHERE empleado_id=? AND fecha=?
+            """, (hora_actual, motivo, empleado_id, hoy))
+
+            conn.commit()
+            conn.close()
+
+            return {
+                "mensaje": "Pausa iniciada",
+                "hora": hora_actual
+            }
+
+        # 🔹 SI YA INICIÓ PERO NO TERMINÓ → FINALIZAR
+        elif pausa_inicio and not pausa_fin:
+            cursor.execute("""
+                UPDATE fichajes
+                SET hora_pausa_fin=?
+                WHERE empleado_id=? AND fecha=?
+            """, (hora_actual, empleado_id, hoy))
+
+            conn.commit()
+            conn.close()
+
+            return {
+                "mensaje": "Pausa finalizada",
+                "hora": hora_actual
+            }
+
+    conn.close()
+
+    raise HTTPException(status_code=400, detail="No hay fichaje activo para hoy")
 
 </script>
 

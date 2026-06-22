@@ -359,7 +359,6 @@ def panel_admin(token: str = None):
         
 @app.get("/pausa")
 def pausa(empleado_id: str, motivo: str = None):
-    print("MOTIVO RECIBIDO:", motivo)
     conn = database.conectar()
     cursor = conn.cursor()
 
