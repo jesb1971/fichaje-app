@@ -44,11 +44,11 @@ EMPLEADOS = {
     "begona_bonis": {"nombre": "Begoña de Bonis", "empresa": "GRUPO ICADEPRO", "tipo_acceso": "movil"},
     "sonia_gomez": {"nombre": "Sonia Esther Gómez Díaz", "empresa": "GRUPO ICADEPRO", "tipo_acceso": "oficina"},
     "andres_caceres": {"nombre": "Andrés del Rosario Lorenzo Cáceres Mascareño", "empresa": "GRUPO ICADEPRO", "tipo_acceso": "oficina"},
-    "arsenio_cabrera": {"nombre": "Arsenio Ángel Cabrera", "empresa": "GRUPO ICADEPRO", "tipo_acceso": "oficina"},
+    "arsenio_cabrera": {"nombre": "Arsenio Ángel Ángel Cabrera", "empresa": "GRUPO ICADEPRO", "tipo_acceso": "oficina"},
     "maria_moure": {"nombre": "María Nieves Moure Naveiro", "empresa": "GRUPO ICADEPRO", "tipo_acceso": "oficina"},
     "francisco_padilla": {"nombre": "Francisco Javier Padilla González", "empresa": "GRUPO ICADEPRO", "tipo_acceso": "oficina"},
     "santiago_gutierrez": {"nombre": "Santiago Gutiérrez Fariña", "empresa": "GRUPO ICADEPRO", "tipo_acceso": "oficina"}
-}
+  }
 
 # 🔐 PINES
 PINS = {
