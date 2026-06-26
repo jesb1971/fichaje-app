@@ -402,10 +402,14 @@ def pausa(pin: str, motivo: str = None):
     hoy = datetime.now(ZoneInfo("Atlantic/Canary")).strftime("%Y-%m-%d")
     hora_actual = datetime.now(ZoneInfo("Atlantic/Canary")).strftime("%H:%M:%S")
 
-    cursor.execute(
-        "SELECT hora_entrada, hora_pausa_inicio, hora_pausa_fin FROM fichajes WHERE empleado_id=? AND fecha=?",
-        (empleado_id, hoy)
-    )
+    cursor.execute("""
+        SELECT empleado_id, fecha, hora_entrada
+        FROM fichajes
+        WHERE fecha < ?
+        AND fecha >= '2026-06-01'
+        AND hora_entrada IS NOT NULL
+        AND (hora_salida IS NULL OR hora_salida = '-')
+    """, (hoy,))
 
     registro = cursor.fetchone()
 
