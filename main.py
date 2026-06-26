@@ -435,10 +435,15 @@ def corregir_salida(empleado_id: str, fecha: str, hora: str = None):
 
     # 🔹 ACTUALIZAR SALIDA
     cursor.execute("""
-        UPDATE fichajes
-        SET hora_salida = ?
+    UPDATE fichajes
+    SET hora_salida = ?
+    WHERE id = (
+        SELECT id FROM fichajes
         WHERE empleado_id = ? AND fecha = ?
-    """, (hora, empleado_id, fecha))
+        ORDER BY id DESC
+        LIMIT 1
+    )
+""", (hora, empleado_id, fecha))
 
     conn.commit()
     conn.close()
