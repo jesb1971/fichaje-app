@@ -439,3 +439,32 @@ def pausa(pin: str, motivo: str = None):
     # ❌ YA TIENE PAUSA COMPLETA
     conn.close()
     return {"mensaje": "Ya has registrado una pausa hoy", "hora": hora_actual}
+    
+@app.get("/fichajes_incompletos")
+def fichajes_incompletos():
+
+    conn = database.conectar()
+    cursor = conn.cursor()
+
+    cursor.execute("""
+        SELECT empleado_id, fecha, hora_entrada
+        FROM fichajes
+        WHERE hora_entrada IS NOT NULL
+        AND (hora_salida IS NULL OR hora_salida = '-')
+    """)
+
+    datos = cursor.fetchall()
+    conn.close()
+
+    resultado = []
+
+    for empleado_id, fecha, entrada in datos:
+        nombre = EMPLEADOS.get(empleado_id, {}).get("nombre", empleado_id)
+
+        resultado.append({
+            "empleado": nombre,
+            "fecha": fecha,
+            "entrada": entrada
+        })
+
+    return resultado
