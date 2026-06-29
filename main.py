@@ -462,7 +462,7 @@ def mi_reporte(pin: str):
     empleado_id = None
 
     for key, value in EMPLEADOS.items():
-        if value.get("pin") == pin:
+        if str(value.get("pin")) == str(pin):
             empleado_id = key
             break
 
