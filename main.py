@@ -461,8 +461,8 @@ def mi_reporte(pin: str):
     # 🔹 Obtener empleado por PIN
     empleado_id = None
 
-    for key, value in EMPLEADOS.items():
-        if str(value.get("pin")) == str(pin):
+    for key, value in PINS.items():
+        if str(value) == str(pin):
             empleado_id = key
             break
 
