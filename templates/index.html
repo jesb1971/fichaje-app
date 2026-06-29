@@ -76,6 +76,8 @@ button {
 
 <button onclick="pausa()" style="margin-top:10px;">PAUSA</button>
 
+<button onclick="verMiReporte()" style="margin-top:10px;background:#333;">VER MI REGISTRO</button>
+
 <div id="resultado"></div>
 
 </div>
@@ -162,6 +164,17 @@ function pausa() {
     .catch(() => {
         alert("Error en pausa");
     });
+}
+
+function verMiReporte() {
+    const pin = document.getElementById("pin").value;
+
+    if (!pin) {
+        alert("Introduce tu PIN");
+        return;
+    }
+
+    window.open(`/mi_reporte?pin=${pin}`, "_blank");
 }
 
 </script>

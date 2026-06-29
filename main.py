@@ -520,32 +520,48 @@ def mi_reporte(pin: str):
     html = f"""
     <html>
     <head>
-        <title>Mi reporte</title>
+        <title>Registro de jornada</title>
         <style>
             body {{ font-family: Arial; padding:20px; }}
-            h2 {{ text-align:center; }}
-            table {{ width:100%; border-collapse:collapse; }}
+            h2, h3 {{ text-align:center; }}
+            table {{ width:100%; border-collapse:collapse; margin-top:20px; }}
             th, td {{ border:1px solid #ccc; padding:8px; text-align:center; }}
             th {{ background:#333; color:white; }}
+            .footer {{ margin-top:40px; font-size:12px; }}
         </style>
     </head>
     <body>
 
-    <h2>Registro de Jornada</h2>
+    <h2>REGISTRO DE JORNADA LABORAL</h2>
     <h3>{nombre}</h3>
+
+    p><strong>Empresa:</strong> {empleado_data.get("empresa","")}</p>
+    <p><strong>Periodo:</strong> Registro completo disponible</p>
 
     <table>
         <tr>
             <th>Fecha</th>
-            <th>Entrada</th>
-            <th>Salida</th>
-            <th>Horas</th>
+            <th>Hora entrada</th>
+            <th>Hora salida</th>
+            <th>Horas trabajadas</th>
         </tr>
         {filas}
     </table>
 
+    <div class="footer">
+        <p>
+            Este documento refleja el registro diario de jornada conforme al Art. 34.9 del Estatuto de los Trabajadores.
+        </p>
+
+        <br><br>
+
+        <p>Firma del trabajador: ____________________________</p>
+        <p>Firma de la empresa: ____________________________</p>
+    </div>
+
     <br>
-    <button onclick="window.print()">Descargar PDF</button>
+
+    <button onclick="window.print()">Descargar / Imprimir PDF</button>
 
     </body>
     </html>
