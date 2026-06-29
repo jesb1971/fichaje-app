@@ -493,6 +493,8 @@ def mi_reporte(pin: str, fecha_inicio: str = None, fecha_fin: str = None):
     conn.close()
 
     filas = ""
+    
+    total_minutos = 0
 
     for f in datos:
         fecha, entrada, salida, p_ini, p_fin = f
@@ -513,6 +515,8 @@ def mi_reporte(pin: str, fecha_inicio: str = None, fecha_fin: str = None):
                 minutos -= int((p2 - p1).total_seconds() // 60)
 
             minutos = max(0, minutos)
+            
+            total_minutos += minutos
 
             horas = f"{minutos//60}h {minutos%60}m"
 
@@ -524,6 +528,9 @@ def mi_reporte(pin: str, fecha_inicio: str = None, fecha_fin: str = None):
             <td>{horas}</td>
         </tr>
         """
+        
+    horas_total = total_minutos // 60
+    minutos_total = total_minutos % 60
 
     html = f"""
     <html>
@@ -594,6 +601,10 @@ def mi_reporte(pin: str, fecha_inicio: str = None, fecha_fin: str = None):
         </tr>
         {filas}
     </table>
+    
+    <h3 style="text-align:center; margin-top:20px;">
+        Total trabajado: {horas_total}h {minutos_total}m
+    </h3>
 
     <div class="footer">
         <p>
