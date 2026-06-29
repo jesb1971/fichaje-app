@@ -420,7 +420,7 @@ def fichajes_incompletos():
     return resultado
     
 @app.get("/corregir_salida")
-def corregir_salida(empleado_id: str, fecha: str, hora: str = None):
+def corregir_salida(id: int, hora: str = None):
 
     from datetime import datetime
     from zoneinfo import ZoneInfo
@@ -433,17 +433,11 @@ def corregir_salida(empleado_id: str, fecha: str, hora: str = None):
         ahora = datetime.now(ZoneInfo("Atlantic/Canary"))
         hora = ahora.strftime("%H:%M:%S")
 
-    # 🔹 ACTUALIZAR SALIDA
     cursor.execute("""
-    UPDATE fichajes
-    SET hora_salida = ?
-    WHERE id = (
-        SELECT id FROM fichajes
-        WHERE empleado_id = ? AND fecha = ?
-        ORDER BY id DESC
-        LIMIT 1
-    )
-""", (hora, empleado_id, fecha))
+        UPDATE fichajes
+        SET hora_salida = ?
+        WHERE id = ?
+    """, (hora, id))
 
     conn.commit()
     conn.close()

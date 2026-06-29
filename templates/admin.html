@@ -280,11 +280,14 @@ function pintarTabla(datos) {
 
         tabla.innerHTML += `
             <tr class="${clase}">
-                <td>${f.nombre}</td>
-                <td>${f.empresa}</td>
-                <td style="text-align:center;">${f.fecha}</td>
-                <td>${f.entrada || "-"}</td>
-                <td>${f.salida || "-"}</td>
+			<td>${f.nombre}</td>
+			<td>${f.empresa}</td>
+			<td style="text-align:center;">${f.fecha}</td>
+			<td>${f.entrada || "-"}</td>
+			<td>
+				${f.salida || "-"}
+				${!f.salida && f.id ? `<br><button onclick="corregir(${f.id})" style="margin-top:5px;">Corregir</button>` : ""}
+			</td>
 				<td style="text-align:center;">${
 					f.pausa_inicio
 					? (f.pausa_fin
@@ -367,16 +370,18 @@ function calcularTotalHoras(datos) {
     const ultimos = {};
 
     datos.forEach(f => {
-        if (!ultimos[f.empleado]) {
-            ultimos[f.empleado] = f;
-        }
+        if (!ultimos[f.nombre] || f.fecha > ultimos[f.nombre].fecha) {
+			ultimos[f.nombre] = f;
+		}
     });
         
     // 🔹 CONTAR ACTIVOS (SOLO ÚLTIMO REGISTRO)
     Object.values(ultimos).forEach(f => {
-        if (f.entrada && !f.salida) {
-            empleadosActivos.add(f.empleado);
-        }
+        datos.forEach(f => {
+			if (!ultimos[f.nombre] || f.fecha > ultimos[f.nombre].fecha) {
+				ultimos[f.nombre] = f;
+			}	
+		});
     });
     
     // 🔹 SUMAR HORAS (TODOS LOS REGISTROS)
@@ -476,6 +481,35 @@ function descargarExcel() {
     window.location.href = url;
 }
 
+function corregir(id) {
+
+    const hora = prompt("Introduce hora de salida (HH:MM) o deja vacío para usar hora actual:");
+
+    let url = `/corregir_salida?id=${id}`;
+
+   if (hora && hora.trim() !== "") {
+
+		const regex = /^([01]\d|2[0-3]):([0-5]\d)$/;
+
+		if (!regex.test(hora)) {
+        alert("Formato incorrecto. Usa HH:MM");
+        return;
+    }
+
+    url += `&hora=${hora}:00`;
+	}
+
+    fetch(url)
+    .then(res => res.json())
+    .then(data => {
+        alert(data.mensaje + " - " + data.hora);
+        location.reload();
+    })
+    .catch(() => {
+        alert("Error al corregir");
+    });
+}
+
 // 🚀 IMPORTANTE (ESTO ES LO QUE TE FALTABA)
 document.addEventListener("DOMContentLoaded", function() {
     cargarDatos();
@@ -483,5 +517,4 @@ document.addEventListener("DOMContentLoaded", function() {
 
 </script>
 
-</script>
 </html>
