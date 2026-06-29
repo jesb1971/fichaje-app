@@ -450,7 +450,7 @@ def corregir_salida(id: int, hora: str = None):
 from fastapi.responses import HTMLResponse
 
 @app.get("/mi_reporte", response_class=HTMLResponse)
-def mi_reporte(pin: str):
+def mi_reporte(pin: str, fecha_inicio: str = None, fecha_fin: str = None):
 
     from datetime import datetime
     from zoneinfo import ZoneInfo
@@ -474,12 +474,20 @@ def mi_reporte(pin: str):
     nombre = empleado_data.get("nombre", empleado_id)
 
     # 🔹 Obtener fichajes
-    cursor.execute("""
+    query = """
         SELECT fecha, hora_entrada, hora_salida, hora_pausa_inicio, hora_pausa_fin
         FROM fichajes
         WHERE empleado_id = ?
-        ORDER BY fecha DESC
-    """, (empleado_id,))
+    """
+    params = [empleado_id]
+
+    if fecha_inicio and fecha_fin:
+        query += " AND fecha BETWEEN ? AND ?"
+        params.extend([fecha_inicio, fecha_fin])
+
+    query += " ORDER BY fecha DESC"
+
+    cursor.execute(query, params)
 
     datos = cursor.fetchall()
     conn.close()
@@ -550,6 +558,29 @@ def mi_reporte(pin: str):
 
     <h2>REGISTRO DE JORNADA LABORAL</h2>
     <h3>{nombre}</h3>
+    
+    <form method="get" style="margin-top:15px; text-align:center;">
+
+        <input type="hidden" name="pin" value="{pin}">
+
+        <label>Desde:</label>
+        <input type="date" name="fecha_inicio">
+
+        <label>Hasta:</label>
+        <input type="date" name="fecha_fin">
+
+        <button type="submit" style="
+            background:#f97316;
+            color:white;
+            padding:6px 12px;
+            border:none;
+            border-radius:4px;
+            cursor:pointer;
+        ">
+            Filtrar
+        </button>
+
+    </form>
 
     <p><strong>Empresa:</strong> {empleado_data.get("empresa","")}</p>
     <p><strong>Periodo:</strong> Registro completo disponible</p>
@@ -577,7 +608,17 @@ def mi_reporte(pin: str):
 
     <br>
 
-    <button onclick="window.print()">Descargar / Imprimir PDF</button>
+    <button onclick="window.print()" style="
+        background:#f97316;
+        color:white;
+        padding:10px 20px;
+        border:none;
+        border-radius:6px;
+        cursor:pointer;
+        font-size:14px;
+    ">
+        Descargar / Imprimir PDF
+    </button>
 
     </body>
     </html>
