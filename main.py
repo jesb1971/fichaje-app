@@ -39,7 +39,7 @@ EMPLEADOS = {
     "nazaret_ramos": {"nombre": "Nazaret Ramos Bethencourt", "empresa": "Proyectos Empresariales Canarios", "tipo_acceso": "oficina"},
     "soledad_fernandez": {"nombre": "Soledad Fernández Abreu", "empresa": "ICADEPRO", "tipo_acceso": "oficina"},
     "asuncion_olivares": {"nombre": "Asunción Olivares Peña", "empresa": "PROICAFOR", "tipo_acceso": "oficina"},
-    "jose_sanchez": {"nombre": "José Sánchez", "empresa": "GRUPO ICADEPRO", "tipo_acceso": "oficina"},
+    "jose_sanchez": {"nombre": "José Enrique Sánchez Bracho", "empresa": "GRUPO ICADEPRO", "tipo_acceso": "oficina"},
     "maria_eugenia_lopez": {"nombre": "Mª Eugenia López Baez", "empresa": "GRUPO ICADEPRO", "tipo_acceso": "oficina"},
     "begona_bonis": {"nombre": "Begoña de Bonis", "empresa": "GRUPO ICADEPRO", "tipo_acceso": "movil"},
     "sonia_gomez": {"nombre": "Sonia Esther Gómez Díaz", "empresa": "GRUPO ICADEPRO", "tipo_acceso": "oficina"},
