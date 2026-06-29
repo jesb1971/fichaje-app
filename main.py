@@ -522,12 +522,28 @@ def mi_reporte(pin: str):
     <head>
         <title>Registro de jornada</title>
         <style>
-            body {{ font-family: Arial; padding:20px; }}
+            body {{
+                font-family: Arial;
+                padding:20px;
+                max-width: 900px;
+                margin: auto;
+            }}
+
             h2, h3 {{ text-align:center; }}
+
             table {{ width:100%; border-collapse:collapse; margin-top:20px; }}
+
             th, td {{ border:1px solid #ccc; padding:8px; text-align:center; }}
+
             th {{ background:#333; color:white; }}
+
             .footer {{ margin-top:40px; font-size:12px; }}
+
+            @media print {{
+                button {{
+                    display: none;
+                }}
+            }}
         </style>
     </head>
     <body>
@@ -535,7 +551,7 @@ def mi_reporte(pin: str):
     <h2>REGISTRO DE JORNADA LABORAL</h2>
     <h3>{nombre}</h3>
 
-    p><strong>Empresa:</strong> {empleado_data.get("empresa","")}</p>
+    <p><strong>Empresa:</strong> {empleado_data.get("empresa","")}</p>
     <p><strong>Periodo:</strong> Registro completo disponible</p>
 
     <table>
