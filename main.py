@@ -446,3 +446,109 @@ def corregir_salida(id: int, hora: str = None):
         "mensaje": "Salida corregida",
         "hora": hora
     }
+    
+from fastapi.responses import HTMLResponse
+
+@app.get("/mi_reporte", response_class=HTMLResponse)
+def mi_reporte(pin: str):
+
+    from datetime import datetime
+    from zoneinfo import ZoneInfo
+
+    conn = database.conectar()
+    cursor = conn.cursor()
+
+    # 🔹 Obtener empleado por PIN
+    empleado_id = None
+
+    for key, value in EMPLEADOS.items():
+        if value.get("pin") == pin:
+            empleado_id = key
+            break
+
+    if not empleado_id:
+        return HTMLResponse("<h2>PIN incorrecto</h2>")
+
+    # 🔹 Datos empleado
+    empleado_data = EMPLEADOS.get(empleado_id, {})
+    nombre = empleado_data.get("nombre", empleado_id)
+
+    # 🔹 Obtener fichajes
+    cursor.execute("""
+        SELECT fecha, hora_entrada, hora_salida, hora_pausa_inicio, hora_pausa_fin
+        FROM fichajes
+        WHERE empleado_id = ?
+        ORDER BY fecha DESC
+    """, (empleado_id,))
+
+    datos = cursor.fetchall()
+    conn.close()
+
+    filas = ""
+
+    for f in datos:
+        fecha, entrada, salida, p_ini, p_fin = f
+
+        horas = "-"
+
+        if entrada and salida:
+            from datetime import datetime
+
+            h1 = datetime.strptime(entrada, "%H:%M:%S")
+            h2 = datetime.strptime(salida, "%H:%M:%S")
+
+            minutos = int((h2 - h1).total_seconds() // 60)
+
+            if p_ini and p_fin:
+                p1 = datetime.strptime(p_ini, "%H:%M:%S")
+                p2 = datetime.strptime(p_fin, "%H:%M:%S")
+                minutos -= int((p2 - p1).total_seconds() // 60)
+
+            minutos = max(0, minutos)
+
+            horas = f"{minutos//60}h {minutos%60}m"
+
+        filas += f"""
+        <tr>
+            <td>{fecha}</td>
+            <td>{entrada or "-"}</td>
+            <td>{salida or "-"}</td>
+            <td>{horas}</td>
+        </tr>
+        """
+
+    html = f"""
+    <html>
+    <head>
+        <title>Mi reporte</title>
+        <style>
+            body {{ font-family: Arial; padding:20px; }}
+            h2 {{ text-align:center; }}
+            table {{ width:100%; border-collapse:collapse; }}
+            th, td {{ border:1px solid #ccc; padding:8px; text-align:center; }}
+            th {{ background:#333; color:white; }}
+        </style>
+    </head>
+    <body>
+
+    <h2>Registro de Jornada</h2>
+    <h3>{nombre}</h3>
+
+    <table>
+        <tr>
+            <th>Fecha</th>
+            <th>Entrada</th>
+            <th>Salida</th>
+            <th>Horas</th>
+        </tr>
+        {filas}
+    </table>
+
+    <br>
+    <button onclick="window.print()">Descargar PDF</button>
+
+    </body>
+    </html>
+    """
+
+    return HTMLResponse(html)
