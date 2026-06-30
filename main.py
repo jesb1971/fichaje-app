@@ -385,6 +385,63 @@ def panel_admin(token: str = None):
     with open(ruta, encoding="utf-8") as f:
         return HTMLResponse(content=f.read())
         
+@app.get("/pausa")
+def pausa(pin: str, motivo: str = None):
+    
+    empleado_id = None
+
+    for key, value in PINS.items():
+        if value == pin:
+            empleado_id = key
+            break
+
+    if not empleado_id:
+        raise HTTPException(status_code=400, detail="PIN incorrecto")
+    
+    conn = database.conectar()
+    cursor = conn.cursor()
+
+    hoy = datetime.now(ZoneInfo("Atlantic/Canary")).strftime("%Y-%m-%d")
+    hora_actual = datetime.now(ZoneInfo("Atlantic/Canary")).strftime("%H:%M:%S")
+
+    cursor.execute(
+        "SELECT hora_entrada, hora_pausa_inicio, hora_pausa_fin FROM fichajes WHERE empleado_id=? AND fecha=?",
+        (empleado_id, hoy)
+    )
+
+    registro = cursor.fetchone()
+
+    # ❌ NO HA FICHADO ENTRADA
+    if not registro or not registro[0]:
+        conn.close()
+        return {"mensaje": "Primero debes fichar entrada", "hora": hora_actual}
+
+    entrada, pausa_inicio, pausa_fin = registro
+
+    # 🔹 INICIAR PAUSA
+    if pausa_inicio is None:
+        cursor.execute(
+            "UPDATE fichajes SET hora_pausa_inicio=?, motivo_pausa=? WHERE empleado_id=? AND fecha=?",
+            (hora_actual, motivo, empleado_id, hoy)
+        )
+        conn.commit()
+        conn.close()
+        return {"mensaje": "Pausa iniciada", "hora": hora_actual}
+
+    # 🔹 FINALIZAR PAUSA
+    if pausa_inicio and pausa_fin is None:
+        cursor.execute(
+            "UPDATE fichajes SET hora_pausa_fin=?, motivo_pausa=? WHERE empleado_id=? AND fecha=?",
+            (hora_actual, motivo, empleado_id, hoy)
+        )
+        conn.commit()
+        conn.close()
+        return {"mensaje": "Pausa finalizada", "hora": hora_actual}
+
+    # ❌ YA TIENE PAUSA COMPLETA
+    conn.close()
+    return {"mensaje": "Ya has registrado una pausa hoy", "hora": hora_actual}
+        
 @app.get("/fichajes_incompletos")
 def fichajes_incompletos():
 
