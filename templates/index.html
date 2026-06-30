@@ -142,19 +142,33 @@ async function fichar() {
 
     alerta.style.display = "block";
     alerta.innerHTML = `
-        ⚠️ Ya tienes una entrada registrada.<br><br>
-        <button onclick="confirmarSalida()" style="
-            background:#b30000;
-            color:white;
-            padding:12px;
-            border:none;
-            border-radius:6px;
-            width:100%;
-            font-size:16px;
-        ">
-            CONFIRMAR SALIDA
-        </button>
-    `;
+    ⚠️ Ya tienes una entrada registrada.<br><br>
+
+    <button onclick="confirmarSalida()" style="
+        background:#b30000;
+        color:white;
+        padding:12px;
+        border:none;
+        border-radius:6px;
+        width:100%;
+        font-size:16px;
+        margin-bottom:10px;
+    ">
+        CONFIRMAR SALIDA
+    </button>
+
+    <button onclick="cancelarAlerta()" style="
+        background:#555;
+        color:white;
+        padding:10px;
+        border:none;
+        border-radius:6px;
+        width:100%;
+        font-size:14px;
+    ">
+        CANCELAR
+    </button>
+`;
 
     return;
 }
@@ -177,6 +191,64 @@ async function fichar() {
         alert("Error al fichar");
     });
 }
+
+function confirmarSalida() {
+    let pin = document.getElementById("pin").value;
+
+    fetch(`/fichar?pin=${pin}`)
+    .then(res => res.json().then(data => ({ ok: res.ok, data })))
+    .then(({ ok, data }) => {
+
+        if (!ok) throw data;
+
+        // 🔹 Ocultar alerta
+        document.getElementById("alertaConfirmacion").style.display = "none";
+
+        // 🔹 Mostrar resultado
+        document.getElementById("resultado").innerHTML = `
+            <div style="background:#e6ffe6;color:#006600;padding:15px;border-radius:8px;">
+                ${data.mensaje} - ${data.hora}
+            </div>
+        `;
+
+        // 🔹 Limpiar PIN
+        document.getElementById("pin").value = "";
+
+    })
+    .catch(() => {
+        alert("Error al registrar salida");
+    });
+}
+alerta.innerHTML = `
+
+alerta.innerHTML = `
+    ⚠️ Ya tienes una entrada registrada.<br><br>
+
+    <button onclick="confirmarSalida()" style="
+        background:#b30000;
+        color:white;
+        padding:12px;
+        border:none;
+        border-radius:6px;
+        width:100%;
+        font-size:16px;
+        margin-bottom:10px;
+    ">
+        CONFIRMAR SALIDA
+    </button>
+
+    <button onclick="cancelarAlerta()" style="
+        background:#555;
+        color:white;
+        padding:10px;
+        border:none;
+        border-radius:6px;
+        width:100%;
+        font-size:14px;
+    ">
+        CANCELAR
+    </button>
+`;
 
 // 🔥 PAUSA
 function pausa() {
