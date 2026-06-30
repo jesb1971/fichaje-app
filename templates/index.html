@@ -170,6 +170,8 @@ async function fichar() {
     </button>
 `;
 
+	document.getElementById("botonFichar").disabled = true;
+
     return;
 }
 
@@ -203,6 +205,8 @@ function confirmarSalida() {
 
         // 🔹 Ocultar alerta
         document.getElementById("alertaConfirmacion").style.display = "none";
+		
+		document.getElementById("botonFichar").disabled = false;
 
         // 🔹 Mostrar resultado
         document.getElementById("resultado").innerHTML = `
@@ -222,6 +226,7 @@ function confirmarSalida() {
 
 function cancelarAlerta() {
     document.getElementById("alertaConfirmacion").style.display = "none";
+	 document.getElementById("botonFichar").disabled = false;
 }
 
 // 🔥 PAUSA
