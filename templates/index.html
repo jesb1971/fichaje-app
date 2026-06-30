@@ -65,7 +65,18 @@ button {
 
 <input type="password" id="pin" placeholder="Introduce tu PIN">
 
-<button onclick="fichar()">FICHAR</button>
+<div id="alertaConfirmacion" style="
+    display:none;
+    background:#ffe5e5;
+    color:#b30000;
+    padding:15px;
+    border-radius:8px;
+    margin-bottom:15px;
+    font-weight:bold;
+">
+</div>
+
+<button id="botonFichar" onclick="fichar()">FICHAR</button>
 
 <select id="motivoPausa" style="margin-top:10px;">
     <option value="">Selecciona motivo de pausa</option>
@@ -126,9 +137,27 @@ async function fichar() {
     }
 
     if (dataEstado.estado === "entrada_hecha") {
-        const confirmar = confirm("Ya tienes una entrada registrada. ¿Seguro que deseas registrar la salida?");
-        if (!confirmar) return;
-    }
+
+    const alerta = document.getElementById("alertaConfirmacion");
+
+    alerta.style.display = "block";
+    alerta.innerHTML = `
+        ⚠️ Ya tienes una entrada registrada.<br><br>
+        <button onclick="confirmarSalida()" style="
+            background:#b30000;
+            color:white;
+            padding:12px;
+            border:none;
+            border-radius:6px;
+            width:100%;
+            font-size:16px;
+        ">
+            CONFIRMAR SALIDA
+        </button>
+    `;
+
+    return;
+}
 
     fetch(`/fichar?pin=${pin}`)
     .then(res => res.json().then(data => ({ ok: res.ok, data })))
