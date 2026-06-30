@@ -219,36 +219,10 @@ function confirmarSalida() {
         alert("Error al registrar salida");
     });
 }
-alerta.innerHTML = `
 
-alerta.innerHTML = `
-    ⚠️ Ya tienes una entrada registrada.<br><br>
-
-    <button onclick="confirmarSalida()" style="
-        background:#b30000;
-        color:white;
-        padding:12px;
-        border:none;
-        border-radius:6px;
-        width:100%;
-        font-size:16px;
-        margin-bottom:10px;
-    ">
-        CONFIRMAR SALIDA
-    </button>
-
-    <button onclick="cancelarAlerta()" style="
-        background:#555;
-        color:white;
-        padding:10px;
-        border:none;
-        border-radius:6px;
-        width:100%;
-        font-size:14px;
-    ">
-        CANCELAR
-    </button>
-`;
+function cancelarAlerta() {
+    document.getElementById("alertaConfirmacion").style.display = "none";
+}
 
 // 🔥 PAUSA
 function pausa() {
