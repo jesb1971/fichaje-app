@@ -199,6 +199,7 @@ th {
             <th>Horas</th>
             <th>Tipo</th>
             <th>IP</th>
+			<th>Observaciones</th>
         </tr>
     </thead>
 
@@ -311,6 +312,7 @@ function pintarTabla(datos) {
                     ${f.tipo.toUpperCase()}
                 </td>
                 <td>${f.ip}</td>
+				<td>${f.observaciones || "-"}</td>
             </tr>
         `;
     });
