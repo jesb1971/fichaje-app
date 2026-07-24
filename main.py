@@ -524,6 +524,23 @@ def corregir_salida(id: int, hora: str = None):
     
 from fastapi.responses import HTMLResponse
 
+@app.get("/guardar_observacion")
+def guardar_observacion(id: int, texto: str):
+
+    conn = database.conectar()
+    cursor = conn.cursor()
+
+    cursor.execute("""
+        UPDATE fichajes
+        SET observaciones = ?
+        WHERE id = ?
+    """, (texto, id))
+
+    conn.commit()
+    conn.close()
+
+    return {"ok": True}
+
 @app.get("/mi_reporte", response_class=HTMLResponse)
 def mi_reporte(pin: str, fecha_inicio: str = None, fecha_fin: str = None):
 
