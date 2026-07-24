@@ -19,6 +19,21 @@ app.mount("/static", StaticFiles(directory=os.path.join(BASE_DIR, "static")), na
 database.crear_tabla()
 database.crear_tabla_alertas()
 
+def asegurar_columna_observaciones():
+    conn = database.conectar()
+    cursor = conn.cursor()
+
+    cursor.execute("PRAGMA table_info(fichajes)")
+    columnas = [col[1] for col in cursor.fetchall()]
+
+    if "observaciones" not in columnas:
+        cursor.execute("ALTER TABLE fichajes ADD COLUMN observaciones TEXT")
+        conn.commit()
+        print("[DB] Columna 'observaciones' añadida")
+
+    conn.close()
+asegurar_columna_observaciones()
+
 # 🔐 CONFIG
 USUARIO = "rrhh"
 PASSWORD = "Icadepro2026!"
