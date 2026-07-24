@@ -289,7 +289,7 @@ def exportar_excel(fecha_inicio: str = None, fecha_fin: str = None, empleado_id:
     conn = database.conectar()
     cursor = conn.cursor()
 
-    query = "SELECT empleado_id,fecha,hora_entrada,hora_salida,tipo,empresa,hora_pausa_inicio,hora_pausa_fin,motivo_pausa FROM fichajes WHERE 1=1"
+    query = "SELECT empleado_id,fecha,hora_entrada,hora_salida,tipo,empresa,hora_pausa_inicio,hora_pausa_fin,motivo_pausa, observaciones FROM fichajes WHERE 1=1"
     params = []
 
     # 🔹 Filtro por fechas
@@ -327,12 +327,12 @@ def exportar_excel(fecha_inicio: str = None, fecha_fin: str = None, empleado_id:
     ws.page_margins.top = 0.5
     ws.page_margins.bottom = 0.5
 
-    ws.append(["Empleado","Empresa","Fecha","Entrada","Salida","Pausa no computable","Motivo pausa","Horas","Tipo"])
+    ws.append(["Empleado","Empresa","Fecha","Entrada","Salida","Pausa no computable","Motivo pausa","Horas","Tipo","Observaciones"])
     
     total_minutos = 0
 
     for fila in datos:
-        empleado, fecha, entrada, salida, tipo, empresa, pausa_inicio, pausa_fin, motivo = fila
+        empleado, fecha, entrada, salida, tipo, empresa, pausa_inicio, pausa_fin, motivo, observaciones = fila
 
         horas = "-"
         minutos_totales = 0
@@ -374,7 +374,7 @@ def exportar_excel(fecha_inicio: str = None, fecha_fin: str = None, empleado_id:
             
         motivo_texto = motivo if motivo else "-"
             
-        ws.append([nombre,empresa,fecha,entrada,salida,pausa_texto,motivo_texto,horas,tipo])
+        ws.append([nombre,empresa,fecha,entrada,salida,pausa_texto,motivo_texto,horas,tipo,observacion or "-"])
         
     horas_total = total_minutos // 60
     minutos_total = total_minutos % 60
@@ -589,7 +589,7 @@ def mi_reporte(pin: str, fecha_inicio: str = None, fecha_fin: str = None):
     total_minutos = 0
 
     for f in datos:
-        fecha, entrada, salida, p_ini, p_fin = f
+        fecha, entrada, salida, p_ini, p_fin = f, observacion = f
 
         horas = "-"
 
@@ -618,6 +618,7 @@ def mi_reporte(pin: str, fecha_inicio: str = None, fecha_fin: str = None):
             <td>{entrada or "-"}</td>
             <td>{salida or "-"}</td>
             <td>{horas}</td>
+            <td>{observacion or "-"}</td>
         </tr>
         """
         
@@ -690,6 +691,7 @@ def mi_reporte(pin: str, fecha_inicio: str = None, fecha_fin: str = None):
             <th>Hora entrada</th>
             <th>Hora salida</th>
             <th>Horas trabajadas</th>
+            <th>Observaciones</th>
         </tr>
         {filas}
     </table>
