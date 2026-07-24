@@ -312,7 +312,13 @@ function pintarTabla(datos) {
                     ${f.tipo.toUpperCase()}
                 </td>
                 <td>${f.ip}</td>
-				<td>${f.observaciones || "-"}</td>
+				<td>
+					${f.observaciones || "-"}
+					<br>
+					<button onclick="editarObservacion(${f.id})" style="margin-top:5px;">
+						Añadir
+					</button>
+				</td>
             </tr>
         `;
     });
@@ -516,6 +522,21 @@ function corregir(id) {
 document.addEventListener("DOMContentLoaded", function() {
     cargarDatos();
 });
+
+function editarObservacion(id) {
+    const texto = prompt("Escribe la observación:");
+
+    if (!texto) return;
+
+    fetch(`/guardar_observacion?id=${id}&texto=${encodeURIComponent(texto)}`)
+    .then(res => res.json())
+    .then(() => {
+        location.reload();
+    })
+    .catch(() => {
+        alert("Error al guardar observación");
+    });
+}
 
 </script>
 
