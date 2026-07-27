@@ -567,7 +567,7 @@ def mi_reporte(pin: str, fecha_inicio: str = None, fecha_fin: str = None):
 
     # 🔹 Obtener fichajes
     query = """
-        SELECT fecha, hora_entrada, hora_salida, hora_pausa_inicio, hora_pausa_fin
+        SELECT fecha, hora_entrada, hora_salida, hora_pausa_inicio, hora_pausa_fin, observaciones
         FROM fichajes
         WHERE empleado_id = ?
     """
@@ -589,7 +589,7 @@ def mi_reporte(pin: str, fecha_inicio: str = None, fecha_fin: str = None):
     total_minutos = 0
 
     for f in datos:
-        fecha, entrada, salida, p_ini, p_fin = f, observacion = f
+        fecha, entrada, salida, p_ini, p_fin, observacion = f
 
         horas = "-"
 
