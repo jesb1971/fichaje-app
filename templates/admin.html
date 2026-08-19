@@ -549,7 +549,7 @@ function rectificarSalida(id) {
 
     const horaLimpia = hora.trim();
 
-    // 🔹 EN UNA RECTIFICACIÓN LA HORA ES OBLIGATORIA
+    // 🔹 LA HORA ES OBLIGATORIA
     if (horaLimpia === "") {
         alert("Debes introducir la hora de salida correcta.");
         return;
@@ -566,7 +566,6 @@ function rectificarSalida(id) {
     // 🔹 MOTIVO OBLIGATORIO
     const motivo = prompt("Indica el motivo de la rectificación:");
 
-    // 🔹 CANCELAR O ESC → NO HACER NADA
     if (motivo === null) {
         return;
     }
@@ -578,12 +577,45 @@ function rectificarSalida(id) {
         return;
     }
 
-    // 🔹 TODAVÍA NO GUARDAMOS NADA
-    alert(
-        "Rectificación preparada:\n\n" +
-        "Nueva hora de salida: " + horaLimpia + "\n" +
-        "Motivo: " + motivoLimpio
+    // 🔹 CONFIRMACIÓN FINAL
+    const confirmar = confirm(
+        "Vas a rectificar la hora de salida a " +
+        horaLimpia +
+        ".\n\nMotivo: " +
+        motivoLimpio +
+        "\n\n¿Confirmas la rectificación?"
     );
+
+    if (!confirmar) {
+        return;
+    }
+
+    // 🔹 ENVIAR RECTIFICACIÓN AL SERVIDOR
+    const url =
+        `/rectificar_salida?id=${id}` +
+        `&hora=${encodeURIComponent(horaLimpia + ":00")}` +
+        `&motivo=${encodeURIComponent(motivoLimpio)}`;
+
+    fetch(url)
+    .then(async res => {
+
+        const data = await res.json();
+
+        if (!res.ok) {
+            throw new Error(
+                data.detail || "No se pudo rectificar la salida"
+            );
+        }
+
+        return data;
+    })
+    .then(data => {
+        alert(data.mensaje + " - " + data.hora);
+        location.reload();
+    })
+    .catch(error => {
+        alert(error.message);
+    });
 }
 
 // 🚀 IMPORTANTE (ESTO ES LO QUE TE FALTABA)
