@@ -262,10 +262,10 @@ function pintarTabla(datos) {
         if (f.empresa.includes("Proyectos")) clase = "PROYECTOS";
         if (f.empresa.includes("PROICAFOR")) clase = "PROICAFOR";
         if (f.empresa.includes("GRUPO")) clase = "GRUPO";
-		
-		if (f.entrada && !f.salida) {
-			clase = clase ? clase + " activo" : "activo";
-		}
+
+        if (f.entrada && !f.salida) {
+            clase = clase ? clase + " activo" : "activo";
+        }
 
         let horas = "-";
         if (f.entrada && f.salida) {
@@ -281,49 +281,56 @@ function pintarTabla(datos) {
 
         tabla.innerHTML += `
             <tr class="${clase}">
-			<td>${f.nombre}</td>
-			<td>${f.empresa}</td>
-			<td style="text-align:center;">${f.fecha}</td>
-			<td>${f.entrada || "-"}</td>
-			<td>
-				${f.salida || "-"}
-                ${f.id ? `
-                    <br>
-                    <button onclick="${f.salida ? `rectificarSalida(${f.id})` : `corregir(${f.id})`}" style="margin-top:5px;">
-                        ${f.salida ? "Rectificar" : "Corregir"}
-                    </button>
-                ` : ""}
-			</td>
-				<td style="text-align:center;">${
-					f.pausa_inicio
-					? (f.pausa_fin
-						? calcularPausa(f.pausa_inicio, f.pausa_fin)
-						: '<span style="color:#e67e22;font-weight:bold;">En pausa</span>')
-					: "-"
-				}</td>
-				<td style="text-align:center;">${
-					 f.motivo_pausa && f.motivo_pausa !== "-"
-					 ? `<span style="
-						background:#e9ecef;
-						padding:4px 8px;
-						border-radius:6px;
-						font-size:12px;
-						font-weight:bold;
-					 ">${f.motivo_pausa}</span>`
-					 : "-"
-				}</td>
+                <td>${f.nombre}</td>
+                <td>${f.empresa}</td>
+                <td style="text-align:center;">${f.fecha}</td>
+
+                <td>
+                    ${f.entrada || "-"}
+                </td>
+
+                <td>
+                    ${f.salida || "-"}
+
+                    ${f.id ? `
+                        <br>
+                        <button onclick="rectificarJornada(${f.id})" style="margin-top:5px;">
+                            Rectificar
+                        </button>
+                    ` : ""}
+                </td>
+
+                <td style="text-align:center;">${
+                    f.pausa_inicio
+                        ? (f.pausa_fin
+                            ? calcularPausa(f.pausa_inicio, f.pausa_fin)
+                            : '<span style="color:#e67e22;font-weight:bold;">En pausa</span>')
+                        : "-"
+                }</td>
+
+                <td style="text-align:center;">${
+                    f.motivo_pausa && f.motivo_pausa !== "-"
+                        ? `<span style="
+                            background:#e9ecef;
+                            padding:4px 8px;
+                            border-radius:6px;
+                            font-size:12px;
+                            font-weight:bold;
+                        ">${f.motivo_pausa}</span>`
+                        : "-"
+                }</td>
+
                 <td>${calcularHorasTrabajo(f)}</td>
+
                 <td style="color:${f.tipo === "remoto" ? "red" : "green"};font-weight:bold;">
                     ${f.tipo.toUpperCase()}
                 </td>
+
                 <td>${f.ip}</td>
-				<td>
-					${f.observaciones || "-"}
-					<br>
-					<button onclick="editarObservacion(${f.id})" style="margin-top:5px;">
-						Añadir
-					</button>
-				</td>
+
+                <td>
+                    ${f.observaciones || "-"}
+                </td>
             </tr>
         `;
     });
@@ -611,6 +618,123 @@ function rectificarSalida(id) {
     })
     .then(data => {
         alert(data.mensaje + " - " + data.hora);
+        location.reload();
+    })
+    .catch(error => {
+        alert(error.message);
+    });
+}
+
+function rectificarJornada(id) {
+
+    // 🔹 BUSCAR EL REGISTRO EN LOS DATOS CARGADOS
+    const registro = datosGlobales.find(f => f.id === id);
+
+    if (!registro) {
+        alert("No se ha podido localizar el registro.");
+        return;
+    }
+
+    // 🔹 PEDIR NUEVA HORA DE ENTRADA
+    const entrada = prompt(
+        "Hora de entrada actual: " + (registro.entrada || "-") +
+        "\n\nIntroduce la hora de entrada correcta (HH:MM):",
+        registro.entrada ? registro.entrada.substring(0, 5) : ""
+    );
+
+    if (entrada === null) {
+        return;
+    }
+
+    const entradaLimpia = entrada.trim();
+
+    // 🔹 PEDIR NUEVA HORA DE SALIDA
+    const salida = prompt(
+        "Hora de salida actual: " + (registro.salida || "-") +
+        "\n\nIntroduce la hora de salida correcta (HH:MM):",
+        registro.salida ? registro.salida.substring(0, 5) : ""
+    );
+
+    if (salida === null) {
+        return;
+    }
+
+    const salidaLimpia = salida.trim();
+
+    // 🔹 VALIDAR FORMATO
+    const regex = /^([01]\d|2[0-3]):([0-5]\d)$/;
+
+    if (!regex.test(entradaLimpia)) {
+        alert("La hora de entrada no tiene un formato válido. Usa HH:MM");
+        return;
+    }
+
+    if (!regex.test(salidaLimpia)) {
+        alert("La hora de salida no tiene un formato válido. Usa HH:MM");
+        return;
+    }
+
+    // 🔹 COMPROBAR COHERENCIA
+    if (salidaLimpia <= entradaLimpia) {
+        alert("La hora de salida debe ser posterior a la hora de entrada.");
+        return;
+    }
+
+    // 🔹 PEDIR MOTIVO
+    const motivo = prompt("Indica el motivo de la rectificación:");
+
+    if (motivo === null) {
+        return;
+    }
+
+    const motivoLimpio = motivo.trim();
+
+    if (motivoLimpio === "") {
+        alert("Debes indicar el motivo de la rectificación.");
+        return;
+    }
+
+    // 🔹 CONFIRMACIÓN FINAL
+    const confirmar = confirm(
+        "Vas a rectificar esta jornada:\n\n" +
+        "Entrada: " + entradaLimpia + "\n" +
+        "Salida: " + salidaLimpia + "\n\n" +
+        "Motivo: " + motivoLimpio +
+        "\n\n¿Confirmas la rectificación?"
+    );
+
+    if (!confirmar) {
+        return;
+    }
+
+    // 🔹 ENVIAR RECTIFICACIÓN AL SERVIDOR
+    const url =
+        `/rectificar_jornada?id=${id}` +
+        `&entrada=${encodeURIComponent(entradaLimpia + ":00")}` +
+        `&salida=${encodeURIComponent(salidaLimpia + ":00")}` +
+        `&motivo=${encodeURIComponent(motivoLimpio)}`;
+
+    fetch(url)
+    .then(async res => {
+
+        const data = await res.json();
+
+        if (!res.ok) {
+            throw new Error(
+                data.detail || "No se pudo rectificar la jornada"
+            );
+        }
+
+        return data;
+    })
+    .then(data => {
+
+        alert(
+            data.mensaje +
+            "\n\nEntrada: " + data.entrada +
+            "\nSalida: " + data.salida
+        );
+
         location.reload();
     })
     .catch(error => {

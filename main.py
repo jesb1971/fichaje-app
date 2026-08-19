@@ -573,8 +573,8 @@ def guardar_observacion(id: int, texto: str):
 
     return {"ok": True}
     
-@app.get("/rectificar_salida")
-def rectificar_salida(id: int, hora: str, motivo: str):
+@app.get("/rectificar_jornada")
+def rectificar_jornada(id: int, entrada: str, salida: str, motivo: str):
 
     from datetime import datetime
     from zoneinfo import ZoneInfo
@@ -598,20 +598,12 @@ def rectificar_salida(id: int, hora: str, motivo: str):
             detail="Fichaje no encontrado"
         )
 
-    hora_entrada, hora_salida_anterior, observaciones_actuales = registro
+    entrada_anterior, salida_anterior, observaciones_actuales = registro
 
-    # 🔹 VALIDAR QUE EXISTA UNA SALIDA QUE RECTIFICAR
-    if not hora_salida_anterior:
-        conn.close()
-        raise HTTPException(
-            status_code=400,
-            detail="Este fichaje no tiene una salida registrada para rectificar"
-        )
-
-    # 🔹 VALIDAR FORMATO Y COHERENCIA DE HORAS
+    # 🔹 VALIDAR FORMATO DE LAS NUEVAS HORAS
     try:
-        entrada_dt = datetime.strptime(hora_entrada, "%H:%M:%S")
-        salida_dt = datetime.strptime(hora, "%H:%M:%S")
+        entrada_dt = datetime.strptime(entrada, "%H:%M:%S")
+        salida_dt = datetime.strptime(salida, "%H:%M:%S")
     except (ValueError, TypeError):
         conn.close()
         raise HTTPException(
@@ -619,14 +611,15 @@ def rectificar_salida(id: int, hora: str, motivo: str):
             detail="Formato de hora no válido"
         )
 
-    if salida_dt < entrada_dt:
+    # 🔹 VALIDAR COHERENCIA DE LA JORNADA
+    if salida_dt <= entrada_dt:
         conn.close()
         raise HTTPException(
             status_code=400,
-            detail="La hora de salida no puede ser anterior a la hora de entrada"
+            detail="La hora de salida debe ser posterior a la hora de entrada"
         )
 
-    # 🔹 EL MOTIVO ES OBLIGATORIO TAMBIÉN EN BACKEND
+    # 🔹 MOTIVO OBLIGATORIO
     motivo = motivo.strip()
 
     if not motivo:
@@ -636,14 +629,34 @@ def rectificar_salida(id: int, hora: str, motivo: str):
             detail="Debes indicar el motivo de la rectificación"
         )
 
-    # 🔹 CREAR TRAZABILIDAD DE LA RECTIFICACIÓN
+    # 🔹 COMPROBAR QUE REALMENTE EXISTA ALGÚN CAMBIO
+    if entrada == entrada_anterior and salida == salida_anterior:
+        conn.close()
+        raise HTTPException(
+            status_code=400,
+            detail="No se ha realizado ningún cambio en la jornada"
+        )
+
+    # 🔹 FECHA Y HORA DE LA RECTIFICACIÓN
     ahora = datetime.now(ZoneInfo("Atlantic/Canary"))
     fecha_rectificacion = ahora.strftime("%d/%m/%Y %H:%M")
 
+    cambios = []
+
+    if entrada != entrada_anterior:
+        cambios.append(
+            f"entrada {entrada_anterior or '-'} → {entrada}"
+        )
+
+    if salida != salida_anterior:
+        cambios.append(
+            f"salida {salida_anterior or '-'} → {salida}"
+        )
+
     nueva_observacion = (
         f"Rectificación {fecha_rectificacion}: "
-        f"salida {hora_salida_anterior} → {hora}. "
-        f"Motivo: {motivo}"
+        + "; ".join(cambios)
+        + f". Motivo: {motivo}"
     )
 
     # 🔹 CONSERVAR OBSERVACIONES ANTERIORES
@@ -656,19 +669,27 @@ def rectificar_salida(id: int, hora: str, motivo: str):
     else:
         observaciones = nueva_observacion
 
-    # 🔹 ACTUALIZAR HORA Y OBSERVACIÓN EN UNA SOLA OPERACIÓN
+    # 🔹 ACTUALIZAR ENTRADA, SALIDA Y TRAZABILIDAD
     cursor.execute("""
         UPDATE fichajes
-        SET hora_salida = ?, observaciones = ?
+        SET hora_entrada = ?,
+            hora_salida = ?,
+            observaciones = ?
         WHERE id = ?
-    """, (hora, observaciones, id))
+    """, (
+        entrada,
+        salida,
+        observaciones,
+        id
+    ))
 
     conn.commit()
     conn.close()
 
     return {
-        "mensaje": "Salida rectificada correctamente",
-        "hora": hora
+        "mensaje": "Jornada rectificada correctamente",
+        "entrada": entrada,
+        "salida": salida
     }
 
 @app.get("/mi_reporte", response_class=HTMLResponse)
