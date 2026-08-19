@@ -289,7 +289,7 @@ function pintarTabla(datos) {
 				${f.salida || "-"}
                 ${f.id ? `
                     <br>
-                    <button onclick="corregir(${f.id})" style="margin-top:5px;">
+                    <button onclick="${f.salida ? `rectificarSalida(${f.id})` : `corregir(${f.id})`}" style="margin-top:5px;">
                         ${f.salida ? "Rectificar" : "Corregir"}
                     </button>
                 ` : ""}
@@ -536,6 +536,54 @@ function corregir(id) {
     .catch(error => {
         alert(error.message);
     });
+}
+
+function rectificarSalida(id) {
+
+    const hora = prompt("Introduce la hora de salida correcta (HH:MM):");
+
+    // 🔹 CANCELAR O ESC → NO HACER NADA
+    if (hora === null) {
+        return;
+    }
+
+    const horaLimpia = hora.trim();
+
+    // 🔹 EN UNA RECTIFICACIÓN LA HORA ES OBLIGATORIA
+    if (horaLimpia === "") {
+        alert("Debes introducir la hora de salida correcta.");
+        return;
+    }
+
+    // 🔹 VALIDAR FORMATO HH:MM
+    const regex = /^([01]\d|2[0-3]):([0-5]\d)$/;
+
+    if (!regex.test(horaLimpia)) {
+        alert("Formato incorrecto. Usa HH:MM");
+        return;
+    }
+
+    // 🔹 MOTIVO OBLIGATORIO
+    const motivo = prompt("Indica el motivo de la rectificación:");
+
+    // 🔹 CANCELAR O ESC → NO HACER NADA
+    if (motivo === null) {
+        return;
+    }
+
+    const motivoLimpio = motivo.trim();
+
+    if (motivoLimpio === "") {
+        alert("Debes indicar el motivo de la rectificación.");
+        return;
+    }
+
+    // 🔹 TODAVÍA NO GUARDAMOS NADA
+    alert(
+        "Rectificación preparada:\n\n" +
+        "Nueva hora de salida: " + horaLimpia + "\n" +
+        "Motivo: " + motivoLimpio
+    );
 }
 
 // 🚀 IMPORTANTE (ESTO ES LO QUE TE FALTABA)
