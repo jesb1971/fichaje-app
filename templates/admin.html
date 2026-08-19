@@ -287,7 +287,12 @@ function pintarTabla(datos) {
 			<td>${f.entrada || "-"}</td>
 			<td>
 				${f.salida || "-"}
-				${!f.salida && f.id ? `<br><button onclick="corregir(${f.id})" style="margin-top:5px;">Corregir</button>` : ""}
+                ${f.id ? `
+                    <br>
+                    <button onclick="corregir(${f.id})" style="margin-top:5px;">
+                        ${f.salida ? "Rectificar" : "Corregir"}
+                    </button>
+                ` : ""}
 			</td>
 				<td style="text-align:center;">${
 					f.pausa_inicio
