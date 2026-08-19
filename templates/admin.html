@@ -493,28 +493,43 @@ function corregir(id) {
 
     const hora = prompt("Introduce hora de salida (HH:MM) o deja vacío para usar hora actual:");
 
-    let url = `/corregir_salida?id=${id}`;
-
-   if (hora && hora.trim() !== "") {
-
-		const regex = /^([01]\d|2[0-3]):([0-5]\d)$/;
-
-		if (!regex.test(hora)) {
-        alert("Formato incorrecto. Usa HH:MM");
+    // 🔹 CANCELAR O ESC → NO HACER NADA
+    if (hora === null) {
         return;
     }
 
-    url += `&hora=${hora}:00`;
-	}
+    let url = `/corregir_salida?id=${id}`;
+
+    // 🔹 SI INTRODUCE UNA HORA → VALIDAR HH:MM
+    if (hora.trim() !== "") {
+
+        const regex = /^([01]\d|2[0-3]):([0-5]\d)$/;
+
+        if (!regex.test(hora)) {
+            alert("Formato incorrecto. Usa HH:MM");
+            return;
+        }
+
+        url += `&hora=${hora}:00`;
+    }
 
     fetch(url)
-    .then(res => res.json())
+    .then(async res => {
+
+        const data = await res.json();
+
+        if (!res.ok) {
+            throw new Error(data.detail || "No se pudo corregir la salida");
+        }
+
+        return data;
+    })
     .then(data => {
         alert(data.mensaje + " - " + data.hora);
         location.reload();
     })
-    .catch(() => {
-        alert("Error al corregir");
+    .catch(error => {
+        alert(error.message);
     });
 }
 

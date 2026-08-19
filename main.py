@@ -503,11 +503,45 @@ def corregir_salida(id: int, hora: str = None):
     conn = database.conectar()
     cursor = conn.cursor()
 
-    # 🔹 SI NO VIENE HORA → USAR AHORA
+    # 🔹 OBTENER EL FICHAJE ANTES DE MODIFICARLO
+    cursor.execute("""
+        SELECT hora_entrada
+        FROM fichajes
+        WHERE id = ?
+    """, (id,))
+
+    registro = cursor.fetchone()
+
+    if not registro:
+        conn.close()
+        raise HTTPException(status_code=404, detail="Fichaje no encontrado")
+
+    hora_entrada = registro[0]
+
+    # 🔹 SI NO VIENE HORA → USAR HORA ACTUAL
     if not hora:
         ahora = datetime.now(ZoneInfo("Atlantic/Canary"))
         hora = ahora.strftime("%H:%M:%S")
 
+    # 🔹 VALIDAR QUE LA SALIDA NO SEA ANTERIOR A LA ENTRADA
+    try:
+        entrada_dt = datetime.strptime(hora_entrada, "%H:%M:%S")
+        salida_dt = datetime.strptime(hora, "%H:%M:%S")
+    except (ValueError, TypeError):
+        conn.close()
+        raise HTTPException(
+            status_code=400,
+            detail="Formato de hora no válido"
+        )
+
+    if salida_dt < entrada_dt:
+        conn.close()
+        raise HTTPException(
+            status_code=400,
+            detail="La hora de salida no puede ser anterior a la hora de entrada"
+        )
+
+    # 🔹 GUARDAR SALIDA
     cursor.execute("""
         UPDATE fichajes
         SET hora_salida = ?
@@ -521,8 +555,6 @@ def corregir_salida(id: int, hora: str = None):
         "mensaje": "Salida corregida",
         "hora": hora
     }
-    
-from fastapi.responses import HTMLResponse
 
 @app.get("/guardar_observacion")
 def guardar_observacion(id: int, texto: str):
