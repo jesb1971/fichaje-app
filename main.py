@@ -92,7 +92,7 @@ PINS = {
     "francisco_padilla": "1839",
     "santiago_gutierrez": "5535",
     "goretti_dominguez": "7789",
-    "edda_ramos": "7789"
+    "edda_ramos": "2758"
 }
 
 # 🔴 ALERTAS
