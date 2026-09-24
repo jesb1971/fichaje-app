@@ -63,7 +63,8 @@ EMPLEADOS = {
     "maria_moure": {"nombre": "María Nieves Moure Naveiro", "empresa": "GRUPO ICADEPRO", "tipo_acceso": "oficina"},
     "francisco_padilla": {"nombre": "Francisco Javier Padilla González", "empresa": "GRUPO ICADEPRO", "tipo_acceso": "oficina"},
     "santiago_gutierrez": {"nombre": "Santiago Gutiérrez Fariña", "empresa": "GRUPO ICADEPRO", "tipo_acceso": "oficina"},
-    "goretti_dominguez": {"nombre": "Goretti Domínguez Mesa", "empresa": "GRUPO ICADEPRO", "tipo_acceso": "oficina"}
+    "goretti_dominguez": {"nombre": "Goretti Domínguez Mesa", "empresa": "GRUPO ICADEPRO", "tipo_acceso": "oficina"},
+    "edda_ramos": {"nombre": "Edda Ramos Pérez", "empresa": "GRUPO ICADEPRO", "tipo_acceso": "oficina"}
   }
 
 # 🔐 PINES
@@ -90,7 +91,8 @@ PINS = {
     "maria_moure": "1118",
     "francisco_padilla": "1839",
     "santiago_gutierrez": "5535",
-    "goretti_dominguez": "7789"
+    "goretti_dominguez": "7789",
+    "edda_ramos": "7789"
 }
 
 # 🔴 ALERTAS
